@@ -1,18 +1,30 @@
 *****************************************************************************
-** ChibiOS/RT port for ARM-Cortex-M4 STM32F407.                            **
+** ChibiOS/RT port for ARM-Cortex-M4 STM32F415RG (Mikroe Mini-M4)          **
 *****************************************************************************
 
 ** TARGET **
 
-The demo runs on an ST STM32F4-Discovery board.
+The demo runs on an Mikroe Mini-M4 board.
 
 ** The Demo **
 
-The demo shows how to use PWM and SPI drivers using synchronous APIs. The PWM
-driver the four board LEDs with the data read from the LIS320DL accelerometer.
-The data is also transmitted on the SPI2 port.
-A simple command shell is activated on virtual serial port SD2 via USB-CDC
-driver (use micro-USB plug on STM32F4-Discovery board).
+This is the source code for my base board for future IOT projects.
+
+The base board consists of the following modules:
+- ILI9341 TFT LCD display (SPI)
+- ADS7843 Touch panel driver (SPI)
+- External SD card on the SPI bus
+- HTU21D Temperature and Humidity sensor on the I2C bus
+- ESP8266 wifi chip on USART
+
+The SPI bus is multiplexed between different devices (to save IOs). This 
+is accomplished through ChibiOS/RT's acquireBus() and related APIs. Modifications
+to the origianal mmc_spi driver has been made to accommodate sharing of SPI bus
+among various devices.
+
+Other software/firmware used on this project includes:
+- PolarSSL
+- jsmn (Jasmine) JSON parser
 
 ** Build Procedure **
 
