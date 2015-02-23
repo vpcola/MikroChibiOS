@@ -1,0 +1,3 @@
+JSMNSRC = $(JSMNDIR)/jsmn.c
+
+JSMNINC = $(JSMNDIR)/

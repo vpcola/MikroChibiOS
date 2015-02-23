@@ -1,0 +1,298 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.7	//
+ChibiOSBFSClose	gfile_fs_chibios.c	/^static void ChibiOSBFSClose(GFILE *f) {$/;"	f	file:
+ChibiOSBFSEof	gfile_fs_chibios.c	/^static bool_t ChibiOSBFSEof(GFILE *f) { return f->pos >= chFileStreamGetSize(((BaseFileStream *)f->obj)); }$/;"	f	file:
+ChibiOSBFSGetsize	gfile_fs_chibios.c	/^static long int ChibiOSBFSGetsize(GFILE *f) { return chFileStreamGetSize(((BaseFileStream *)f->obj)); }$/;"	f	file:
+ChibiOSBFSRead	gfile_fs_chibios.c	/^static int ChibiOSBFSRead(GFILE *f, void *buf, int size) {$/;"	f	file:
+ChibiOSBFSSetpos	gfile_fs_chibios.c	/^static bool_t ChibiOSBFSSetpos(GFILE *f, long int pos) {$/;"	f	file:
+ChibiOSBFSWrite	gfile_fs_chibios.c	/^static int ChibiOSBFSWrite(GFILE *f, const void *buf, int size) {$/;"	f	file:
+FILE	sys_defs.h	425;"	d
+FILENAME_MAX	sys_defs.h	420;"	d
+FLOAT_PRECISION	gfile_printg.c	19;"	d	file:
+FOPEN_MAX	sys_defs.h	422;"	d
+FsArray	gfile_gfile.c	/^static const GFILEVMT const * FsArray[] = {$/;"	v	file:
+FsCHIBIOSVMT	gfile_fs_chibios.c	/^static const GFILEVMT FsCHIBIOSVMT = {$/;"	v	file:
+FsFatFSVMT	gfile_fs_fatfs.c	/^const GFILEVMT FsFatFSVMT = {$/;"	v
+FsMemVMT	gfile_fs_mem.c	/^static const GFILEVMT FsMemVMT = {$/;"	v	file:
+FsNativeVMT	gfile_fs_native.c	/^const GFILEVMT FsNativeVMT = {$/;"	v
+FsPetitFSVMT	gfile_fs_petitfs.c	/^const GFILEVMT FsPetitFSVMT = {$/;"	v
+FsRAMVMT	gfile_fs_ram.c	/^const GFILEVMT FsRAMVMT = {$/;"	v
+FsROMHead	gfile_fs_rom.c	/^static const ROMFS_DIRENTRY const *FsROMHead = ROMFS_DIRENTRY_HEAD;$/;"	v	file:
+FsROMVMT	gfile_fs_rom.c	/^const GFILEVMT FsROMVMT = {$/;"	v
+GFILE	gfile_fs.h	/^struct GFILE {$/;"	s
+GFILE	sys_defs.h	/^typedef struct GFILE GFILE;$/;"	t	typeref:struct:GFILE
+GFILEFLG_APPEND	gfile_fs.h	23;"	d
+GFILEFLG_BINARY	gfile_fs.h	24;"	d
+GFILEFLG_CANSEEK	gfile_fs.h	26;"	d
+GFILEFLG_DELONCLOSE	gfile_fs.h	25;"	d
+GFILEFLG_FAILONBLOCK	gfile_fs.h	27;"	d
+GFILEFLG_MUSTEXIST	gfile_fs.h	28;"	d
+GFILEFLG_MUSTNOTEXIST	gfile_fs.h	29;"	d
+GFILEFLG_OPEN	gfile_fs.h	20;"	d
+GFILEFLG_READ	gfile_fs.h	21;"	d
+GFILEFLG_TRUNC	gfile_fs.h	30;"	d
+GFILEFLG_WRITE	gfile_fs.h	22;"	d
+GFILEVMT	gfile_fs.h	/^typedef struct GFILEVMT {$/;"	s
+GFILEVMT	gfile_fs.h	/^} GFILEVMT;$/;"	t	typeref:struct:GFILEVMT
+GFILE_ALLOW_DEVICESPECIFIC	sys_options.h	194;"	d
+GFILE_ALLOW_FLOATS	sys_options.h	185;"	d
+GFILE_MAX_GFILES	sys_options.h	202;"	d
+GFILE_NEED_CHIBIOSFS	sys_options.h	155;"	d
+GFILE_NEED_FATFS	sys_options.h	114;"	d
+GFILE_NEED_FILELISTS	sys_options.h	173;"	d
+GFILE_NEED_MEMFS	sys_options.h	165;"	d
+GFILE_NEED_NATIVEFS	sys_options.h	143;"	d
+GFILE_NEED_NOAUTOMOUNT	sys_options.h	31;"	d
+GFILE_NEED_NOAUTOSYNC	sys_options.h	44;"	d
+GFILE_NEED_PETITFS	sys_options.h	130;"	d
+GFILE_NEED_PRINTG	sys_options.h	52;"	d
+GFILE_NEED_RAMFS	sys_options.h	101;"	d
+GFILE_NEED_ROMFS	sys_options.h	89;"	d
+GFILE_NEED_SCANG	sys_options.h	60;"	d
+GFILE_NEED_STDIO	sys_options.h	76;"	d
+GFILE_NEED_STRINGS	sys_options.h	67;"	d
+GFSFLG_CASESENSITIVE	gfile_fs.h	43;"	d
+GFSFLG_FAST	gfile_fs.h	45;"	d
+GFSFLG_SEEKABLE	gfile_fs.h	44;"	d
+GFSFLG_SMALL	gfile_fs.h	46;"	d
+GFSFLG_TEXTMODES	gfile_fs.h	47;"	d
+GFSFLG_WRITEABLE	gfile_fs.h	42;"	d
+L_tmpnam	sys_defs.h	421;"	d
+MAX_FILLER	gfile_printg.c	18;"	d	file:
+MEMRead	gfile_fs_mem.c	/^static int MEMRead(GFILE *f, void *buf, int size) {$/;"	f	file:
+MEMSetpos	gfile_fs_mem.c	/^static bool_t MEMSetpos(GFILE *f, long int pos) {$/;"	f	file:
+MEMWrite	gfile_fs_mem.c	/^static int MEMWrite(GFILE *f, const void *buf, int size) {$/;"	f	file:
+MMC	gfile_fatfs_diskio_chibios.c	40;"	d	file:
+NativeClose	gfile_fs_native.c	/^static void NativeClose(GFILE *f)									{ fclose((FILE *)f->obj); }$/;"	f	file:
+NativeDel	gfile_fs_native.c	/^static bool_t NativeDel(const char *fname)							{ return remove(fname) ? FALSE : TRUE; }$/;"	f	file:
+NativeEof	gfile_fs_native.c	/^static bool_t NativeEof(GFILE *f)									{ return feof((FILE *)f->obj) ? TRUE : FALSE; }$/;"	f	file:
+NativeExists	gfile_fs_native.c	/^static bool_t NativeExists(const char *fname) {$/;"	f	file:
+NativeFileList	gfile_fs_native.c	/^		typedef struct NativeFileList {$/;"	s	file:
+NativeFileList	gfile_fs_native.c	/^		} NativeFileList;$/;"	t	typeref:struct:NativeFileList	file:
+NativeFilesize	gfile_fs_native.c	/^static long int	NativeFilesize(const char *fname) {$/;"	f	file:
+NativeFlClose	gfile_fs_native.c	/^		static void NativeFlClose(gfileList *pfl) {$/;"	f	file:
+NativeFlOpen	gfile_fs_native.c	/^		static gfileList *NativeFlOpen(const char *path, bool_t dirs) {$/;"	f	file:
+NativeFlRead	gfile_fs_native.c	/^		static const char *NativeFlRead(gfileList *pfl) {$/;"	f	file:
+NativeGetsize	gfile_fs_native.c	/^static long int NativeGetsize(GFILE *f) {$/;"	f	file:
+NativeOpen	gfile_fs_native.c	/^static bool_t NativeOpen(GFILE *f, const char *fname) {$/;"	f	file:
+NativeRead	gfile_fs_native.c	/^static int NativeRead(GFILE *f, void *buf, int size)				{ return fread(buf, 1, size, (FILE *)f->obj); }$/;"	f	file:
+NativeRen	gfile_fs_native.c	/^static bool_t NativeRen(const char *oldname, const char *newname)	{ return rename(oldname, newname) ? FALSE : TRUE; }$/;"	f	file:
+NativeSetpos	gfile_fs_native.c	/^static bool_t NativeSetpos(GFILE *f, long int pos)					{ return fseek((FILE *)f->obj, pos, SEEK_SET) ?  FALSE : TRUE; }$/;"	f	file:
+NativeWrite	gfile_fs_native.c	/^static int NativeWrite(GFILE *f, const void *buf, int size)			{ return fwrite(buf, 1, size, (FILE *)f->obj); }$/;"	f	file:
+Native_flags2mode	gfile_fs_native.c	/^static void Native_flags2mode(char *buf, uint16_t flags) {$/;"	f	file:
+P_tmpdir	sys_defs.h	424;"	d
+ROMClose	gfile_fs_rom.c	/^static void ROMClose(GFILE *f)$/;"	f	file:
+ROMEof	gfile_fs_rom.c	/^static bool_t ROMEof(GFILE *f)$/;"	f	file:
+ROMExists	gfile_fs_rom.c	/^static bool_t ROMExists(const char *fname)$/;"	f	file:
+ROMFS_CMP_UNCOMPRESSED	gfile_fs_rom.c	24;"	d	file:
+ROMFS_DIRENTRY	gfile_fs_rom.c	/^typedef struct ROMFS_DIRENTRY {$/;"	s	file:
+ROMFS_DIRENTRY	gfile_fs_rom.c	/^} ROMFS_DIRENTRY;$/;"	t	typeref:struct:ROMFS_DIRENTRY	file:
+ROMFS_DIRENTRY_HEAD	gfile_fs_rom.c	35;"	d	file:
+ROMFS_DIR_VER_MAX	gfile_fs_rom.c	21;"	d	file:
+ROMFileList	gfile_fs_rom.c	/^typedef struct ROMFileList {$/;"	s	file:
+ROMFileList	gfile_fs_rom.c	/^} ROMFileList;$/;"	t	typeref:struct:ROMFileList	file:
+ROMFilesize	gfile_fs_rom.c	/^static long int	ROMFilesize(const char *fname)$/;"	f	file:
+ROMFindFile	gfile_fs_rom.c	/^static const ROMFS_DIRENTRY *ROMFindFile(const char *fname)$/;"	f	file:
+ROMFlClose	gfile_fs_rom.c	/^	static void ROMFlClose(gfileList *pfl) {$/;"	f	file:
+ROMFlOpen	gfile_fs_rom.c	/^	static gfileList *ROMFlOpen(const char *path, bool_t dirs) {$/;"	f	file:
+ROMFlRead	gfile_fs_rom.c	/^	static const char *ROMFlRead(gfileList *pfl) {$/;"	f	file:
+ROMGetsize	gfile_fs_rom.c	/^static long int ROMGetsize(GFILE *f)$/;"	f	file:
+ROMOpen	gfile_fs_rom.c	/^static bool_t ROMOpen(GFILE *f, const char *fname)$/;"	f	file:
+ROMRead	gfile_fs_rom.c	/^static int ROMRead(GFILE *f, void *buf, int size)$/;"	f	file:
+ROMSetpos	gfile_fs_rom.c	/^static bool_t ROMSetpos(GFILE *f, long int pos)$/;"	f	file:
+SDC	gfile_fatfs_diskio_chibios.c	41;"	d	file:
+SEEK_CUR	sys_defs.h	435;"	d
+SEEK_END	sys_defs.h	436;"	d
+SEEK_SET	sys_defs.h	434;"	d
+StringRead	gfile_fs_strings.c	/^static int StringRead(GFILE *f, void *buf, int size) {$/;"	f	file:
+StringVMT	gfile_fs_strings.c	/^static const GFILEVMT StringVMT = {$/;"	v	file:
+StringWrite	gfile_fs_strings.c	/^static int StringWrite(GFILE *f, const void *buf, int size) {$/;"	f	file:
+TMP_MAX	sys_defs.h	423;"	d
+_FATFS_WRAPPER	gfile_fatfs_wrapper.h	15;"	d
+_GFILE_FS_H	gfile_fs.h	15;"	d
+_GFILE_H	sys_defs.h	20;"	d
+_GFILE_OPTIONS_H	sys_options.h	17;"	d
+_GFILE_RULES_H	sys_rules.h	17;"	d
+_INC_TCHAR	gfile_fatfs_wrapper.h	23;"	d
+_PETITFS_WRAPPER	gfile_petitfs_wrapper.h	15;"	d
+_gfileDeinit	gfile_gfile.c	/^void _gfileDeinit(void)$/;"	f
+_gfileFindSlot	gfile_gfile.c	/^GFILE *_gfileFindSlot(const char *mode) {$/;"	f
+_gfileInit	gfile_gfile.c	/^void _gfileInit(void) {$/;"	f
+_gfileNativeAssignStdio	gfile_fs_native.c	/^void _gfileNativeAssignStdio(void) {$/;"	f
+close	gfile_fs.h	/^	void		(*close)	(GFILE *f);$/;"	m	struct:GFILEVMT
+cmp	gfile_fs_rom.c	/^	uint16_t						cmp;			\/\/ Compression format$/;"	m	struct:ROMFS_DIRENTRY	file:
+d	gfile_fs_native.c	/^			DIR *				d;$/;"	m	struct:NativeFileList	file:
+d	gfile_fs_native.c	/^			HANDLE				d;$/;"	m	struct:NativeFileList	file:
+del	gfile_fs.h	/^	bool_t		(*del)		(const char *fname);$/;"	m	struct:GFILEVMT
+dir	gfile_fs_fatfs.c	/^	DIR			dir;$/;"	m	struct:fatfsList	file:
+dir	gfile_fs_petitfs.c	/^	DIR			dir;$/;"	m	struct:petitfsList	file:
+dirs	gfile_fs.h	/^	bool_t					dirs;$/;"	m	struct:gfileList
+disk_initialize	gfile_fatfs_diskio_chibios.c	/^DSTATUS disk_initialize ($/;"	f
+disk_initialize	gfile_petitfs_diskio_chibios.c	/^DSTATUS disk_initialize (void) {$/;"	f
+disk_ioctl	gfile_fatfs_diskio_chibios.c	/^DRESULT disk_ioctl ($/;"	f
+disk_read	gfile_fatfs_diskio_chibios.c	/^DRESULT disk_read ($/;"	f
+disk_readp	gfile_petitfs_diskio_chibios.c	/^DRESULT disk_readp ($/;"	f
+disk_status	gfile_fatfs_diskio_chibios.c	/^DSTATUS disk_status ($/;"	f
+disk_write	gfile_fatfs_diskio_chibios.c	/^DRESULT disk_write ($/;"	f
+eof	gfile_fs.h	/^	bool_t		(*eof)		(GFILE *f);$/;"	m	struct:GFILEVMT
+exists	gfile_fs.h	/^	bool_t		(*exists)	(const char *fname);$/;"	m	struct:GFILEVMT
+f	gfile_fs_native.c	/^			WIN32_FIND_DATA		f;$/;"	m	struct:NativeFileList	file:
+f	gfile_fs_native.c	/^			struct dirent *		f;$/;"	m	struct:NativeFileList	typeref:struct:NativeFileList::dirent	file:
+fatfsClose	gfile_fs_fatfs.c	/^static void fatfsClose(GFILE* f)$/;"	f	file:
+fatfsDel	gfile_fs_fatfs.c	/^static bool_t fatfsDel(const char* fname)$/;"	f	file:
+fatfsEOF	gfile_fs_fatfs.c	/^static bool_t fatfsEOF(GFILE* f)$/;"	f	file:
+fatfsExists	gfile_fs_fatfs.c	/^static bool_t fatfsExists(const char* fname)$/;"	f	file:
+fatfsFileSize	gfile_fs_fatfs.c	/^static long int fatfsFileSize(const char* fname)$/;"	f	file:
+fatfsFlClose	gfile_fs_fatfs.c	/^	static void fatfsFlClose(gfileList *pfl) {$/;"	f	file:
+fatfsFlOpen	gfile_fs_fatfs.c	/^	static gfileList *fatfsFlOpen(const char *path, bool_t dirs) {$/;"	f	file:
+fatfsFlRead	gfile_fs_fatfs.c	/^	static const char *fatfsFlRead(gfileList *pfl) {$/;"	f	file:
+fatfsGetSize	gfile_fs_fatfs.c	/^static long int fatfsGetSize(GFILE* f)$/;"	f	file:
+fatfsList	gfile_fs_fatfs.c	/^typedef struct fatfsList {$/;"	s	file:
+fatfsList	gfile_fs_fatfs.c	/^} fatfsList;$/;"	t	typeref:struct:fatfsList	file:
+fatfsMount	gfile_fs_fatfs.c	/^static bool_t fatfsMount(const char* drive)$/;"	f	file:
+fatfsOpen	gfile_fs_fatfs.c	/^static bool_t fatfsOpen(GFILE* f, const char* fname)$/;"	f	file:
+fatfsRead	gfile_fs_fatfs.c	/^static int fatfsRead(GFILE* f, void* buf, int size)$/;"	f	file:
+fatfsRename	gfile_fs_fatfs.c	/^static bool_t fatfsRename(const char* oldname, const char* newname)$/;"	f	file:
+fatfsSetPos	gfile_fs_fatfs.c	/^static bool_t fatfsSetPos(GFILE* f, long int pos)$/;"	f	file:
+fatfsSync	gfile_fs_fatfs.c	/^static bool_t fatfsSync(GFILE *f)$/;"	f	file:
+fatfsUnmount	gfile_fs_fatfs.c	/^static bool_t fatfsUnmount(const char* drive)$/;"	f	file:
+fatfsWrite	gfile_fs_fatfs.c	/^static int fatfsWrite(GFILE* f, const void* buf, int size)$/;"	f	file:
+fatfs_flags2mode	gfile_fs_fatfs.c	/^static BYTE fatfs_flags2mode(GFILE* f)$/;"	f	file:
+fatfs_fs	gfile_fs_fatfs.c	/^static FATFS fatfs_fs;$/;"	v	file:
+fatfs_mounted	gfile_fs_fatfs.c	/^static bool_t fatfs_mounted = FALSE;$/;"	v	file:
+fclose	sys_defs.h	427;"	d
+feof	sys_defs.h	446;"	d
+ffl	gfile_fs_fatfs.c	284;"	d	file:
+ffl	gfile_fs_fatfs.c	314;"	d	file:
+ffl	gfile_fs_petitfs.c	128;"	d	file:
+fflush	sys_defs.h	439;"	d
+fgetpos	sys_defs.h	443;"	d
+file	gfile_fs_rom.c	/^	const char *					file;			\/\/ The file data$/;"	m	struct:ROMFS_DIRENTRY	file:
+filesize	gfile_fs.h	/^	long int	(*filesize)	(const char *fname);$/;"	m	struct:GFILEVMT
+first	gfile_fs_native.c	/^			bool_t				first;$/;"	m	struct:NativeFileList	file:
+fl	gfile_fs_fatfs.c	/^	gfileList	fl;					\/\/ This must be the first element.$/;"	m	struct:fatfsList	file:
+fl	gfile_fs_native.c	/^			gfileList			fl;$/;"	m	struct:NativeFileList	file:
+fl	gfile_fs_petitfs.c	/^	gfileList	fl;					\/\/ This must be the first element.$/;"	m	struct:petitfsList	file:
+fl	gfile_fs_rom.c	/^	gfileList				fl;$/;"	m	struct:ROMFileList	file:
+flags	gfile_fs.h	/^	uint16_t				flags;$/;"	m	struct:GFILE
+flags	gfile_fs.h	/^	uint8_t					flags;$/;"	m	struct:GFILEVMT
+flclose	gfile_fs.h	/^		void		(*flclose)	(gfileList *pfl);$/;"	m	struct:GFILEVMT
+flopen	gfile_fs.h	/^		gfileList *	(*flopen)	(const char *path, bool_t dirs);$/;"	m	struct:GFILEVMT
+flread	gfile_fs.h	/^		const char *(*flread)	(gfileList *pfl);$/;"	m	struct:GFILEVMT
+fno	gfile_fs_fatfs.c	/^	FILINFO		fno;$/;"	m	struct:fatfsList	file:
+fno	gfile_fs_petitfs.c	/^	FILINFO		fno;$/;"	m	struct:petitfsList	file:
+fnprintg	gfile_printg.c	/^int fnprintg(GFILE *f, int maxlen, const char *fmt, ...) {$/;"	f
+fopen	sys_defs.h	426;"	d
+fpos_t	sys_defs.h	441;"	d
+fprintf	sys_defs.h	449;"	d
+fprintg	sys_defs.h	390;"	d
+fread	sys_defs.h	430;"	d
+fscang	gfile_scang.c	/^int fscang(GFILE *f, const char *fmt, ...) {$/;"	f
+fseek	sys_defs.h	433;"	d
+fsetpos	sys_defs.h	444;"	d
+ftell	sys_defs.h	440;"	d
+fwrite	sys_defs.h	431;"	d
+get_fattime	gfile_fatfs_diskio_chibios.c	/^DWORD get_fattime(void) {$/;"	f
+getsize	gfile_fs.h	/^	long int	(*getsize)	(GFILE *f);$/;"	m	struct:GFILEVMT
+gfileArr	gfile_gfile.c	/^static GFILE gfileArr[GFILE_MAX_GFILES];$/;"	v	file:
+gfileClose	gfile_gfile.c	/^void gfileClose(GFILE *f) {$/;"	f
+gfileCloseFileList	gfile_gfile.c	/^	void gfileCloseFileList(gfileList *pfl) {$/;"	f
+gfileDelete	gfile_gfile.c	/^bool_t gfileDelete(const char *fname) {$/;"	f
+gfileEOF	gfile_gfile.c	/^bool_t gfileEOF(GFILE *f) {$/;"	f
+gfileExists	gfile_gfile.c	/^bool_t gfileExists(const char *fname) {$/;"	f
+gfileGetFilesize	gfile_gfile.c	/^long int gfileGetFilesize(const char *fname) {$/;"	f
+gfileGetPos	gfile_gfile.c	/^long int gfileGetPos(GFILE *f) {$/;"	f
+gfileGetSize	gfile_gfile.c	/^long int gfileGetSize(GFILE *f) {$/;"	f
+gfileList	gfile_fs.h	/^struct gfileList {$/;"	s
+gfileList	sys_defs.h	/^typedef struct gfileList gfileList;$/;"	t	typeref:struct:gfileList
+gfileMount	gfile_gfile.c	/^bool_t gfileMount(char fs, const char* drive) {$/;"	f
+gfileOpen	gfile_gfile.c	/^GFILE *gfileOpen(const char *fname, const char *mode) {$/;"	f
+gfileOpenBaseFileStream	gfile_fs_chibios.c	/^GFILE *		gfileOpenBaseFileStream(void *BaseFileStreamPtr, const char *mode) {$/;"	f
+gfileOpenFileList	gfile_gfile.c	/^	gfileList *gfileOpenFileList(char fs, const char *path, bool_t dirs) {$/;"	f
+gfileOpenMemory	gfile_fs_mem.c	/^GFILE *	gfileOpenMemory(void *memptr, const char *mode) {$/;"	f
+gfileOpenString	gfile_fs_strings.c	/^GFILE *gfileOpenString(char *str, const char *mode) {$/;"	f
+gfileOpenStringFromStaticGFILE	gfile_fs_strings.c	/^static void gfileOpenStringFromStaticGFILE(GFILE *f, char *str) {$/;"	f	file:
+gfileRead	gfile_gfile.c	/^size_t gfileRead(GFILE *f, void *buf, size_t len) {$/;"	f
+gfileReadFileList	gfile_gfile.c	/^	const char *gfileReadFileList(gfileList *pfl) {$/;"	f
+gfileRename	gfile_gfile.c	/^bool_t gfileRename(const char *oldname, const char *newname) {$/;"	f
+gfileSetPos	gfile_gfile.c	/^bool_t gfileSetPos(GFILE *f, long int pos) {$/;"	f
+gfileStdErr	gfile_gfile.c	/^GFILE *gfileStdErr;$/;"	v
+gfileStdIn	gfile_gfile.c	/^GFILE *gfileStdIn;$/;"	v
+gfileStdOut	gfile_gfile.c	/^GFILE *gfileStdOut;$/;"	v
+gfileSync	gfile_gfile.c	/^bool_t gfileSync(GFILE *f) {$/;"	f
+gfileUnmount	gfile_gfile.c	/^bool_t gfileUnmount(char fs, const char* drive) {$/;"	f
+gfileWrite	gfile_gfile.c	/^size_t gfileWrite(GFILE *f, const void *buf, size_t len) {$/;"	f
+gstdioGetpos	gfile_stdio.c	/^int gstdioGetpos(FILE *f, long int *pos) {$/;"	f
+gstdioRead	gfile_stdio.c	/^size_t gstdioRead(void * ptr, size_t size, size_t count, FILE *f) {$/;"	f
+gstdioSeek	gfile_stdio.c	/^int gstdioSeek(FILE *f, size_t offset, int origin) {$/;"	f
+gstdioWrite	gfile_stdio.c	/^size_t gstdioWrite(const void * ptr, size_t size, size_t count, FILE *f) {$/;"	f
+lfn	gfile_fs_fatfs.c	/^		char	lfn[_MAX_LFN + 1];   \/* Buffer to store the LFN *\/$/;"	m	struct:fatfsList	file:
+ltoa_wd	gfile_printg.c	/^static char *ltoa_wd(char *p, long num, unsigned radix, long divisor) {$/;"	f	file:
+mount	gfile_fs.h	/^	bool_t		(*mount)	(const char *drive);$/;"	m	struct:GFILEVMT
+name	gfile_fs_rom.c	/^	const char *					name;			\/\/ The file name$/;"	m	struct:ROMFS_DIRENTRY	file:
+next	gfile_fs_rom.c	/^	const struct ROMFS_DIRENTRY *	next;			\/\/ The next entry$/;"	m	struct:ROMFS_DIRENTRY	typeref:struct:ROMFS_DIRENTRY::ROMFS_DIRENTRY	file:
+nfl	gfile_fs_native.c	153;"	d	file:
+nfl	gfile_fs_native.c	169;"	d	file:
+nfl	gfile_fs_native.c	200;"	d	file:
+nfl	gfile_fs_native.c	224;"	d	file:
+obj	gfile_fs.h	/^	void *					obj;$/;"	m	struct:GFILE
+open	gfile_fs.h	/^	bool_t		(*open)		(GFILE *f, const char *fname);$/;"	m	struct:GFILEVMT
+pdir	gfile_fs_rom.c	/^	const ROMFS_DIRENTRY	*pdir;$/;"	m	struct:ROMFileList	file:
+petitfsExists	gfile_fs_petitfs.c	/^static bool_t petitfsExists(const char* fname)$/;"	f	file:
+petitfsFlClose	gfile_fs_petitfs.c	/^	static void petitfsFlClose(gfileList *pfl) {$/;"	f	file:
+petitfsFlOpen	gfile_fs_petitfs.c	/^	static gfileList *petitfsFlOpen(const char *path, bool_t dirs) {$/;"	f	file:
+petitfsFlRead	gfile_fs_petitfs.c	/^	static const char *petitfsFlRead(gfileList *pfl) {$/;"	f	file:
+petitfsList	gfile_fs_petitfs.c	/^typedef struct petitfsList {$/;"	s	file:
+petitfsList	gfile_fs_petitfs.c	/^} petitfsList;$/;"	t	typeref:struct:petitfsList	file:
+petitfsOpen	gfile_fs_petitfs.c	/^static bool_t petitfsOpen(GFILE* f, const char* fname)$/;"	f	file:
+petitfsRead	gfile_fs_petitfs.c	/^static int petitfsRead(GFILE* f, void* buf, int size)$/;"	f	file:
+petitfsSetPos	gfile_fs_petitfs.c	/^static bool_t petitfsSetPos(GFILE* f, long int pos)$/;"	f	file:
+petitfs_fs	gfile_fs_petitfs.c	/^static FATFS petitfs_fs;$/;"	v	file:
+petitfs_mounted	gfile_fs_petitfs.c	/^static bool_t petitfs_mounted = FALSE;$/;"	v	file:
+pos	gfile_fs.h	/^	long int				pos;$/;"	m	struct:GFILE
+prefix	gfile_fs.h	/^	char					prefix;$/;"	m	struct:GFILEVMT
+printf	sys_defs.h	451;"	d
+printg	sys_defs.h	392;"	d
+read	gfile_fs.h	/^	int			(*read)		(GFILE *f, void *buf, int size);$/;"	m	struct:GFILEVMT
+remove	sys_defs.h	437;"	d
+ren	gfile_fs.h	/^	bool_t		(*ren)		(const char *oldname, const char *newname);$/;"	m	struct:GFILEVMT
+rename	sys_defs.h	438;"	d
+rewind	sys_defs.h	445;"	d
+rfl	gfile_fs_rom.c	155;"	d	file:
+rfl	gfile_fs_rom.c	170;"	d	file:
+scang	sys_defs.h	408;"	d
+sectBuf	gfile_petitfs_diskio_chibios.c	/^static BYTE		sectBuf[512];$/;"	v	file:
+sectpos	gfile_petitfs_diskio_chibios.c	/^static DWORD	sectpos = -1;$/;"	v	file:
+setpos	gfile_fs.h	/^	bool_t		(*setpos)	(GFILE *f, long int pos);$/;"	m	struct:GFILEVMT
+size	gfile_fs_rom.c	/^	long int						size;			\/\/ The file size$/;"	m	struct:ROMFS_DIRENTRY	file:
+snprintf	sys_defs.h	453;"	d
+snprintg	gfile_fs_strings.c	/^	int snprintg(char *buf, int maxlen, const char *fmt, ...) {$/;"	f
+sprintf	sys_defs.h	455;"	d
+sprintg	sys_defs.h	398;"	d
+sscang	gfile_fs_strings.c	/^	int sscang(const char *buf, const char *fmt, ...) {$/;"	f
+stderr	sys_defs.h	419;"	d
+stdin	sys_defs.h	417;"	d
+stdout	sys_defs.h	418;"	d
+sync	gfile_fs.h	/^	bool_t		(*sync)		(GFILE *f);$/;"	m	struct:GFILEVMT
+testopen	gfile_gfile.c	/^static bool_t testopen(const GFILEVMT *p, GFILE *f, const char *fname) {$/;"	f	file:
+unmount	gfile_fs.h	/^	bool_t		(*unmount)	(const char *drive);$/;"	m	struct:GFILEVMT
+ver	gfile_fs_rom.c	/^	uint16_t						ver;			\/\/ Directory Entry Version$/;"	m	struct:ROMFS_DIRENTRY	file:
+vfnprintg	gfile_printg.c	/^int vfnprintg(GFILE *f, int maxlen, const char *fmt, va_list arg) {$/;"	f
+vfprintf	sys_defs.h	448;"	d
+vfprintg	sys_defs.h	389;"	d
+vfscang	gfile_scang.c	/^int vfscang(GFILE *f, const char *fmt, va_list arg) {$/;"	f
+vmt	gfile_fs.h	/^	const struct GFILEVMT *	vmt;$/;"	m	struct:GFILE	typeref:struct:GFILE::GFILEVMT
+vmt	gfile_fs.h	/^	const struct GFILEVMT *	vmt;$/;"	m	struct:gfileList	typeref:struct:gfileList::GFILEVMT
+vprintf	sys_defs.h	450;"	d
+vprintg	sys_defs.h	391;"	d
+vscang	sys_defs.h	407;"	d
+vsnprintf	sys_defs.h	452;"	d
+vsnprintg	gfile_fs_strings.c	/^	int vsnprintg(char *buf, int maxlen, const char *fmt, va_list arg) {$/;"	f
+vsprintf	sys_defs.h	454;"	d
+vsprintg	sys_defs.h	397;"	d
+vsscang	gfile_fs_strings.c	/^	int vsscang(const char *buf, const char *fmt, va_list arg) {$/;"	f
+write	gfile_fs.h	/^	int			(*write)	(GFILE *f, const void *buf, int size);$/;"	m	struct:GFILEVMT
