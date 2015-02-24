@@ -38,6 +38,7 @@ typedef struct {
    bool isblocking; // affects how we read from the channel
    char ipaddress[IPADDR_MAX_SIZ]; // can be a string
    uint16_t port;
+   uint16_t localport;  // Used for binding localport to socket
    InputQueue * iqueue;
 } esp_channel;
 

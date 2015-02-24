@@ -20,7 +20,7 @@ static msg_t humidTempUpdater(void * arg)
     int sockfd, numwrite, numwritten;
     sockaddr_in serveraddr;
 
-    chRegSetThreadName("netupdater");
+    chRegSetThreadName("netupd");
     chprintf(dbg, "[*] Starting netupdater thread...\r\n");
     sockfd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP); //channelOpen(TCP);
     if (sockfd >= 0)
