@@ -33,7 +33,7 @@ static INPUTQUEUE_DECL(iq3, queue_buff3, QUEUEBUF_SIZ, notify, NULL);
 static INPUTQUEUE_DECL(iq4, queue_buff4, QUEUEBUF_SIZ, notify, NULL);
 
 esp_channel _esp_channels[MAX_CONNECTIONS] = {
-      { 0, TCP, CHANNEL_UNUSED, true, "", 0, 0, &iq1 },
+      { 0, TCP, CHANNEL_UNUSED, true, "", 0, 0, &iq0 },
       { 1, TCP, CHANNEL_UNUSED, true, "", 0, 0, &iq1 },
       { 2, TCP, CHANNEL_UNUSED, true, "", 0, 0, &iq2 },
       { 3, TCP, CHANNEL_UNUSED, true, "", 0, 0, &iq3 },
