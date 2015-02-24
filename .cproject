@@ -37,7 +37,7 @@
 		</cconfiguration>
 	</storageModule>
 	<storageModule moduleId="cdtBuildSystem" version="4.0.0">
-		<project id="ARMCM4-STM32F415-MINIM4-G++-MIN.null.1719695831" name="ARMCM4-STM32F415-MINIM4-G++-MIN"/>
+		<project id="MikroChibiOS.null.1719695831" name="MikroChibiOS"/>
 	</storageModule>
 	<storageModule moduleId="scannerConfiguration">
 		<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>

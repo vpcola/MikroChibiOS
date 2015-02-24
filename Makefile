@@ -85,9 +85,9 @@ include $(CHIBIOS)/os/hal/hal.mk
 include $(CHIBIOS)/os/ports/GCC/ARMCMx/STM32F4xx/port.mk
 include $(CHIBIOS)/os/kernel/kernel.mk
 include $(CHIBIOS)/os/various/cpp_wrappers/kernel.mk
-include $(CHIBIOS)/test/test.mk
 include $(CHIBIOS)/os/various/fatfs_bindings/fatfs.mk
 include $(CHIBIOS)/os/various/lwip_bindings/lwip.mk
+include $(CHIBIOS)/test/test.mk
 include $(GFXLIB)/gfx.mk
 include $(GFXLIB)/drivers/gdisp/ILI9341/driver.mk
 include $(GFXLIB)/drivers/ginput/touch/ADS7843/driver.mk
@@ -112,10 +112,10 @@ CSRC = $(PORTSRC) \
        $(HALSRC) \
        $(PLATFORMSRC) \
        $(CHIBIOS)/os/various/evtimer.c \
+       $(CHIBIOS)/os/various/syscalls.c \
        $(CHIBIOS)/os/various/shell.c \
        $(CHIBIOS)/os/various/chprintf.c \
        $(CHIBIOS)/os/various/memstreams.c \
-       $(CHIBIOS)/os/various/syscalls.c \
        $(CHIBIOS)/os/various/chrtclib.c \
        $(FATFSSRC) \
        $(GFXSRC) \
@@ -128,10 +128,10 @@ CSRC = $(PORTSRC) \
 # C++ sources that can be compiled in ARM or THUMB mode depending on the global
 # setting.
 CPPSRC = $(CHCPPSRC) \
-	 	$(SHELLAPPSRC) \
-	 	$(I2CDEVICESSRC) \
-		$(ESP8266SRC) \
-		$(NETAPPSRC) \
+ 	$(SHELLAPPSRC) \
+ 	$(I2CDEVICESSRC) \
+	$(ESP8266SRC) \
+	$(NETAPPSRC) \
          main.cpp
 
 # C sources to be compiled in ARM mode regardless of the global setting.
@@ -163,12 +163,12 @@ INCDIR = $(PORTINC) $(KERNINC) $(TESTINC) \
          $(FATFSINC) \
          $(GFXINC) \
          $(GUIAPPINC) \
-	 	 $(SHELLAPPINC) \
-	 	 $(I2CDEVICESINC) \
-		 $(ESP8266INC) \
-		 $(JSMNINC) \
-		 $(NETAPPINC) \
-		 $(POLARSSLINC) \
+ 	 $(SHELLAPPINC) \
+ 	 $(I2CDEVICESINC) \
+	 $(ESP8266INC) \
+	 $(JSMNINC) \
+	 $(NETAPPINC) \
+	 $(POLARSSLINC) \
          $(CHIBIOS)/os/various
 
 

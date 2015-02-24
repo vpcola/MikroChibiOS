@@ -99,7 +99,7 @@ static int readheaderline(int channelid, char * buff, int bufsiz)
  * which we read in order to determine the number of bytes
  * we need to read for the reply
  */
-static int readhttpsize(BaseSequentialStream * chp, int channelid)
+static int readhttpsize(int channelid)
 {
   char data[200];
   int datatoread = 0;
@@ -107,12 +107,8 @@ static int readhttpsize(BaseSequentialStream * chp, int channelid)
   // to terminate the header
   while(readheaderline(channelid, data, 200) > 0)
   {
-    //chprintf(chp, "Line[%s]\r\n", data);
     if(strstr(data, "Content-Length: ") != NULL)
-    {
       datatoread = atoi(data + 16);
-      //chprintf(chp, "Got data to read = %d\r\n", datatoread);
-    }
   }
 
   return datatoread;
@@ -134,7 +130,7 @@ void cmd_weather(BaseSequentialStream *chp, int argc, char *argv[])
     if (fp)
     {
       chanid = channelOpen(TCP);
-      if (chanid)
+      if (chanid >= 0)
       {
         chprintf(chp, "Channel [%d] opened!\r\n", chanid);
         if (channelConnect(chanid, url, 80) >= 0)
@@ -145,7 +141,7 @@ void cmd_weather(BaseSequentialStream *chp, int argc, char *argv[])
             {
                 chprintf(chp, "Sent GET request header (%d) to channel\r\n", numsend);
                 // Read the reply here ...
-                bytestoread = readhttpsize(chp, chanid);
+                bytestoread = readhttpsize(chanid);
                 chprintf(chp, "Reading channel reply of (%d) bytes ..\r\n", bytestoread);
                 numread = channelRead(chanid, weatherbuff, bytestoread);
                 if (numread > 0)
@@ -168,7 +164,7 @@ void cmd_ipstat(BaseSequentialStream *chp, int argc, char *argv[])
 {
   (void)argv;
 
-  for (int i = 1; i <= MAX_CONNECTIONS; i++)
+  for (int i = 0; i < MAX_CONNECTIONS; i++)
   {
     if (channelIsConnected(i))
     {

@@ -22,7 +22,7 @@ extern "C" {
  * a static list of 4 ring buffers each
  * for receive and send
  **/
-#define MAX_CONNECTIONS 4
+#define MAX_CONNECTIONS 5
 
  enum wifiModes {
       WIFI_MODE_STA = 1,

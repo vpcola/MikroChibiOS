@@ -3,20 +3,18 @@
 #include "test.h"
 #include "chprintf.h"
 #include "shell.h"
-#include "chrtclib.h"
 
 #include "ff.h"
 #include "gfx.h"
 #include "guiapp.h"
-//#include "ds1307.h"
 #include "htu21d.h"
 
 #include "netcmd.h"
+#include "timeutils.h"
 
 
 #include <string.h>
 #include <stdlib.h>
-#include <time.h>
 
 /* Root Path */
 extern char rootpath[50];
@@ -25,7 +23,6 @@ extern bool_t fs_ready;
 /* Generic large buffer.*/
 static uint8_t fbuff[1024];
 
-static time_t unix_time;
 
 
 static FRESULT scan_files(BaseSequentialStream *chp, char *path) {
@@ -233,53 +230,6 @@ static void cmd_display(BaseSequentialStream * chp, int argc, char *argv[])
 
 }
 
-static void cmd_date(BaseSequentialStream * chp, int argc, char *argv[])
-{
-  (void)argv;
-  struct tm timp;
-
-  if (argc == 0) {
-    goto ERROR;
-  }
-#if 0
-  if ((argc == 1) && (strcmp(argv[0], "get") == 0)){
-    unix_time = rtcGetTimeUnixSec((RTCDriver *)&RTCD1);
-
-    if (unix_time == -1){
-      chprintf(chp, "incorrect time in RTC cell\r\n");
-    }
-    else{
-      chprintf(chp, "%D%s",unix_time," - unix time\r\n");
-      rtcGetTimeTm(&RTCD1, &timp);
-      chprintf(chp, "%s%s",asctime(&timp)," - formatted time string\r\n");
-    }
-    return;
-  }
-
-  if ((argc == 2) && (strcmp(argv[0], "set") == 0)){
-    unix_time = atol(argv[1]);
-    if (unix_time > 0){
-      rtcSetTimeUnixSec(&RTCD1, unix_time);
-      return;
-    }
-    else{
-      goto ERROR;
-    }
-  }
-  else{
-    goto ERROR;
-  }
-#endif
-
-ERROR:
-  chprintf(chp, "Usage: date get\r\n");
-  chprintf(chp, "       date set N\r\n");
-  chprintf(chp, "where N is time in seconds sins Unix epoch\r\n");
-  chprintf(chp, "you can get current N value from unix console by the command\r\n");
-  chprintf(chp, "%s", "date +\%s\r\n");
-  return;
-}
-
 static void cmd_sensor(BaseSequentialStream * chp, int argc, char *argv[])
 {
   (void)argv;
@@ -303,7 +253,6 @@ static const ShellCommand commands[] = {
   {"display", cmd_display},
   {"date", cmd_date},
   {"sensor", cmd_sensor},
-  //{"get", cmd_wget},
   {"weather", cmd_weather},
   {"ipstat", cmd_ipstat},
   {NULL, NULL}

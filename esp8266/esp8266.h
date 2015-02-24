@@ -12,7 +12,7 @@
 extern "C" {
 #endif
 
-//#define DEBUG 1
+#define DEBUG 1
 
 #ifdef DEBUG
 #define DBG(X, ...)    if(dbgstrm) chprintf(dbgstrm, X, ##__VA_ARGS__ )
@@ -64,12 +64,12 @@ typedef struct {
   int unknown;
 } APInfo;
 
-#define ESP8266_MAX_CONNECTIONS 4
+#define ESP8266_MAX_CONNECTIONS 5
 typedef struct {
   int status[ESP8266_MAX_CONNECTIONS];
 } IPStatus;
 
-const SerialDriver * getSerialDriver(void);
+SerialDriver * getSerialDriver(void);
 
 // Right now, there can be one user of
 // the 8266 at any point of time.
@@ -102,7 +102,7 @@ bool esp8266Cmd(const char * cmd, const char * rsp, int cmddelay);
 int esp8266CmdCallback(const char *cmd, const char * rsp, responselinehandler handler);
 
 // variation of the above, without the \r\n
-bool esp8266Dta(const char * cmd, const char * rsp, int cmddelay);
+// bool esp8266Dta(const char * cmd, const char * rsp, int cmddelay);
 int esp8266CmdRsp(const char * cmd, const char * term, char * buffer, int buflen, int respline);
 
 

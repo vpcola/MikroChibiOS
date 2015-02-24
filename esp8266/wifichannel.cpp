@@ -15,6 +15,7 @@
 // A fixed static array of input queues
 // Here we define the static buffers for
 // our input queues
+static uint8_t queue_buff0[QUEUEBUF_SIZ];
 static uint8_t queue_buff1[QUEUEBUF_SIZ];
 static uint8_t queue_buff2[QUEUEBUF_SIZ];
 static uint8_t queue_buff3[QUEUEBUF_SIZ];
@@ -25,12 +26,14 @@ static void notify(GenericQueue *qp) {
 }
 
 // Our array of input queues
+static INPUTQUEUE_DECL(iq0, queue_buff0, QUEUEBUF_SIZ, notify, NULL);
 static INPUTQUEUE_DECL(iq1, queue_buff1, QUEUEBUF_SIZ, notify, NULL);
 static INPUTQUEUE_DECL(iq2, queue_buff2, QUEUEBUF_SIZ, notify, NULL);
 static INPUTQUEUE_DECL(iq3, queue_buff3, QUEUEBUF_SIZ, notify, NULL);
 static INPUTQUEUE_DECL(iq4, queue_buff4, QUEUEBUF_SIZ, notify, NULL);
 
 esp_channel _esp_channels[MAX_CONNECTIONS] = {
+      { 0, TCP, CHANNEL_UNUSED, true, "", 0, &iq1 },
       { 1, TCP, CHANNEL_UNUSED, true, "", 0, &iq1 },
       { 2, TCP, CHANNEL_UNUSED, true, "", 0, &iq2 },
       { 3, TCP, CHANNEL_UNUSED, true, "", 0, &iq3 },
@@ -42,29 +45,26 @@ static SerialDriver * dbgstrm = NULL;
 esp_channel * getChannel(int d)
 {
     if ((d >= 0 ) && ( d < MAX_CONNECTIONS))
-        return &_esp_channels[d - 1];
+        return &_esp_channels[d];
 
     return NULL;
 }
 
 static MUTEX_DECL(usartmtx);
 
-char buffer[2048];
-
 static void onLineStatus(IPStatus * ipstatus)
 {
   // Currently if we receive an "Ulink" message, we do not have
   // a way to know which line id its coming from.
   // Hopefully a new firmware will allow us to discern which line
-  // has been disconnected.
-  //
-  // Update: Unfortunately the same goes through AT+CIPSTATUS returns
-  // just "STATUS:4", again it does not tell which line has been
-  // disconnected ....bugger..
+  // has been disconnected. This is the reason why
+  // there is a need to issu CIPSTATUS and parse the results.
+  // I wish the Unlink message should be "Unlink:<id>" which
+  // would indicate which channel is disconnected.
 
-  for (int i = 0; i < ESP8266_MAX_CONNECTIONS; i++ )
+  for (int i = 0; i < MAX_CONNECTIONS; i++ )
   {
-      esp_channel * ch = getChannel(i+1);
+      esp_channel * ch = getChannel(i);
       if (ch)
       {
         ch->status = ipstatus->status[i];
@@ -81,8 +81,9 @@ static msg_t channelListenerThread(void * arg)
     // each connection and send data to wifi chip
     (void)arg;
     int bytestoread, numread, status, numwritten;
-    int chanid; //, pollcount = 0;
+    int chanid, c; //, pollcount = 0;
     esp_channel * channel;
+    SerialDriver * sdp = getSerialDriver();
 
     chRegSetThreadName("wifi");
 
@@ -114,23 +115,23 @@ static msg_t channelListenerThread(void * arg)
                 if (channel)
                 {
                   //chprintf((BaseSequentialStream *)dbgstrm, "<< Reading %d data ...\r\n", bytestoread);
-                  // TODO: Right now just read whatever data
-                  numread = esp8266Read(buffer, bytestoread);
-                  // Wait for the "OK" after read ...
+                  numread = 0; numwritten = 0;
+                  while(numread < bytestoread)
+                  {
+                    c = sdGet(sdp); //  c = sdGetTimeout(sdp, 1000);
+                    if (c >= 0) 
+                    {
+                        // buffer[numread] = c;
+                        // Push the character into the queue
+                        if (chIQPutI(channel->iqueue, c) == RDY_OK)
+                            numwritten++;
+
+                        numread ++;
+                    }
+                  }
+
                   if (esp8266ReadUntil("OK\r\n", 1000))
                   {
-                    // Push the numread bytes to the queue ..
-                    // one character at a time ... slow
-                    // but haven't really have time to think
-                    // about refactoring code yet for speed.
-                    //chprintf((BaseSequentialStream *)dbgstrm, "<< Sending data to queue\r\n");
-                    numwritten = 0;
-                    do {
-                       if (chIQPutI(channel->iqueue, buffer[numwritten]) == RDY_OK)
-                         numwritten++;
-                       else break;
-                    }while(numwritten < numread);
-                    // TODO: check for error conditions here
                     //chprintf((BaseSequentialStream *)dbgstrm, "<< Wrote %d data to queue\r\n", numwritten);
                   }
                 }
@@ -144,22 +145,7 @@ static msg_t channelListenerThread(void * arg)
               //esp8266CmdCallback("AT+CIPSTATUS", "OK\r\n", onLineStatus);
               esp8266GetIpStatus(onLineStatus);
             }
-
-            // Signal the waiting read thread that data is now
-            // available
         }
-#if 0
-        else
-        {
-          if (pollcount > 5)
-          {
-            chprintf((BaseSequentialStream *) dbgstrm, ">> Updating IP status ... %d\r\n");
-            esp8266GetIpStatus(onLineStatus);
-            pollcount = 0;
-          }
-        }
-        pollcount++;
-#endif
 
         chMtxUnlock();
 
@@ -212,7 +198,7 @@ int channelOpen(int conntype)
             _esp_channels[i].status = CHANNEL_DISCONNECTED;
             _esp_channels[i].type = conntype;
 
-            return i+1;
+            return i;
         }
 
     return 0;
@@ -285,6 +271,7 @@ int channelClose(int channel)
 
     return (retval) ? 0 : -1;
 }
+
 #if 0
 static char sendbuff[1024];
 int channelPrint(int channel, const char * format, ...)

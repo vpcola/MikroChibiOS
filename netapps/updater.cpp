@@ -19,8 +19,9 @@ static msg_t humidTempUpdater(void * arg)
     int chanid, numwrite;
 
     chRegSetThreadName("netupdater");
+    chprintf(dbg, "[*] Starting netupdater thread...\r\n");
     chanid = channelOpen(TCP);
-    if (chanid)
+    if (chanid >= 0)
     {
       // Connect to sever
       //chprintf(dbg, "[*] Got % chan id, connecting to server\r\n", chanid);
