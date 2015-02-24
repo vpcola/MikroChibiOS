@@ -56,13 +56,15 @@ char * inet_ntoa_r(const in_addr *addr, char *buf, int buflen)
     return buf;
 }
 
-uint32_t ipaddr_aton(const char *cp, in_addr *addr)
+int inet_aton(int af, const char *cp, in_addr *addr)
 {
     uint32_t val;
     uint8_t base;
     char c;
     uint32_t parts[4];
     uint32_t *pp = parts;
+
+    if (af != AF_INET) return -1;
 
     c = *cp;
     for (;;) {
@@ -156,12 +158,12 @@ uint32_t ipaddr_aton(const char *cp, in_addr *addr)
     return (1);
 }
 
-uint32_t inet_aton(const char *cp)
+int inet_aton_r(const char *cp)
 {
     in_addr val;
 
-    if (ipaddr_aton(cp, &val)) {
-        return (uint32_t) val.s_addr;
+    if (inet_aton(AF_INET, cp, &val)) {
+        return (int) val.s_addr;
     }
     return (IPADDR_NONE);
 }

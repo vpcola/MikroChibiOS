@@ -308,7 +308,7 @@ bool channelSendLine(int channel, const char * msg)
 
 int channelSend(int channel, const char * msg, int msglen)
 {
-    int numsend = 0;
+    int numsend = -1;
 
     if (channelIsConnected(channel))
     {
@@ -322,8 +322,7 @@ int channelSend(int channel, const char * msg, int msglen)
 
       // Unlock the usart ...
       chMtxUnlock();
-    }else
-      return -1;
+    }
 
     return numsend;
 }

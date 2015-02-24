@@ -91,6 +91,9 @@ typedef unsigned long socklen_t;
 char * inet_ntoa(const in_addr *addr);
 char * inet_ntoa_r(const in_addr *addr, char *buf, int buflen);
 
+int inet_aton_r(const char *cp);
+int inet_aton(int af, const char *cp, in_addr *addr);
+
 
 // Socket emulation layer, provides socket-like API
 // to applications

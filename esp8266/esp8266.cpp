@@ -74,7 +74,31 @@ bool esp8266ReadUntil(const char * resp, int timeout)
     return false;
 }
 
-int esp8266ReadSwitch(const char * resp1, const char * resp2, const char * resp3, int timeout)
+int esp8266ReadSwitch2(const char * resp1, const char * resp2, int timeout)
+{
+  int c;
+  int index1 = 0, index2 = 0;
+  int target1 = 0, target2 = 0;
+
+  target1 = strlen(resp1);
+  target2 = strlen(resp2);
+
+  while((c = sdGetTimeout((SerialDriver *) usart, timeout)) > 0)
+  {
+      DBG("%c", c);
+      if (c != resp1[index1])  index1 = 0;
+      if (c == resp1[index1])
+        if(++index1 >= target1) return 0;
+
+      if (c != resp2[index2])  index2 = 0;
+      if (c == resp2[index2])
+        if(++index2 >= target2) return 1;
+  }
+
+  return -1; // none matched or timed out
+}
+
+int esp8266ReadSwitch3(const char * resp1, const char * resp2, const char * resp3, int timeout)
 {
   int c;
   int index1 = 0, index2 = 0, index3 = 0;
@@ -496,8 +520,8 @@ bool esp8266SendHeader(int channel, int datatosend)
 
 int esp8266Send(const char * data, int len)
 {
-    int numsent = 0;
-    //numsent = sdWriteTimeout((SerialDriver *)usart, (uint8_t *) data, len, WRITE_TIMEOUT);
+    int numsent = 0; // , retval;
+
     do {
       sdPut((SerialDriver *) usart, data[numsent]);
       numsent++;
@@ -510,9 +534,17 @@ int esp8266Send(const char * data, int len)
       hexdump(dbgstrm, (void *) data, numsent);
     }
 #endif
+    // TODO: What if send gets an error?
+    // My esp8266 returns a bunch of lines:
+    // ERROR\r\n <- Why!!??
+    // SEND OK\r\n
+    // Need to revisit this.
+    //retval = esp8266ReadSwitch2("ERROR\r\n", "SEND OK\r\n", READ_TIMEOUT);
+    //if (retval <= 0 )
+    //  return -1;
 
     if (!esp8266ReadUntil("SEND OK\r\n", READ_TIMEOUT))
-        numsent = -1;
+      return -1;
 
     return numsent;
 }
@@ -525,7 +557,7 @@ int esp8266ReadRespHeader(int * channel, int * status, int timeout)
   // Discard data until we receive part of the header
   DBG(">>Waiting for message header ...\r\n");
   // Read loop until we have a status
-  *status = esp8266ReadSwitch("Unlink\r\n", "OK\r\n", "+IPD,", timeout);
+  *status = esp8266ReadSwitch3("Unlink\r\n", "OK\r\n", "+IPD,", timeout);
   DBG(">>Status = %d\r\n", *status);
   if(*status == 2)
   {

@@ -12,7 +12,7 @@
 extern "C" {
 #endif
 
-#define DEBUG 1
+//#define DEBUG 1
 
 #ifdef DEBUG
 #define DBG(X, ...)    if(dbgstrm) chprintf(dbgstrm, X, ##__VA_ARGS__ )
@@ -85,7 +85,10 @@ bool esp8266HasData(void);
 // Read esp8266 untill a certain string is received.
 // Read (discard characters read), until resp is read
 bool esp8266ReadUntil(const char * resp, int timeout);
-int esp8266ReadSwitch(const char * resp1, const char * resp2, const char * resp3, int timeout);
+// 2 types of terminating string
+int esp8266ReadSwitch2(const char * resp1, const char * resp2, int timeout);
+// 3 types of terminating string
+int esp8266ReadSwitch3(const char * resp1, const char * resp2, const char * resp3, int timeout);
 // Read to buffer/len until resp is read (resp will be
 // included in the buffer). Returns number of bytes read
 // or negative if len can not hold the number of bytes
