@@ -25,7 +25,8 @@ static void notify(GenericQueue *qp) {
   (void)qp;
 }
 
-// Our array of input queues
+// Our array of input queues, actually no need to do this since Init
+// is called later.
 static INPUTQUEUE_DECL(iq0, queue_buff0, QUEUEBUF_SIZ, notify, NULL);
 static INPUTQUEUE_DECL(iq1, queue_buff1, QUEUEBUF_SIZ, notify, NULL);
 static INPUTQUEUE_DECL(iq2, queue_buff2, QUEUEBUF_SIZ, notify, NULL);
@@ -165,6 +166,7 @@ int wifiInit(int mode, SerialDriver * usart, SerialDriver * dbg)
     chMtxInit(&usartmtx);
 
     // Initialize all the queues here
+    chIQInit(&iq0, queue_buff0, QUEUEBUF_SIZ, notify, NULL);
     chIQInit(&iq1, queue_buff1, QUEUEBUF_SIZ, notify, NULL);
     chIQInit(&iq2, queue_buff2, QUEUEBUF_SIZ, notify, NULL);
     chIQInit(&iq3, queue_buff3, QUEUEBUF_SIZ, notify, NULL);
