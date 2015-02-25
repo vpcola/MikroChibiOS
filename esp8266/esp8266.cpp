@@ -520,10 +520,13 @@ bool esp8266SendHeader(int channel, int datatosend)
 
 int esp8266Send(const char * data, int len)
 {
-    int numsent = 0; // , retval;
+    int numsent = 0, retval;
 
     do {
-      sdPut((SerialDriver *) usart, data[numsent]);
+      //retval = sdPutTimeout((SerialDriver *) usart, data[numsent], WRITE_TIMEOUT);
+      //if (retval < 0) break;
+      if (sdPut((SerialDriver *)usart, data[numsent]) < 0)
+        break;
       numsent++;
     }while(numsent < len);
 
@@ -585,13 +588,15 @@ int esp8266Read(char * buffer, int bytestoread)
   int c;
 
   do {
+    //c = sdGetTimeout((SerialDriver *) usart, READ_TIMEOUT);
     c = sdGet((SerialDriver *) usart);
     if (c >= 0)
     {
         DBG("%c", c );
         buffer[numread] = c; 
         numread ++;
-    }
+    }else
+      break;
   }while(numread < bytestoread);
 
 #ifdef DEBUG

@@ -34,7 +34,7 @@ void cmd_date(BaseSequentialStream * chp, int argc, char *argv[])
   }
 
   if (argc == 1){
-    unix_time = atol(argv[1]);
+    unix_time = atol(argv[0]);
     if (unix_time > 0){
       rtcSetTimeUnixSec(&RTCD1, unix_time);
       return;
@@ -54,7 +54,7 @@ ERROR:
   chprintf(chp, "       date <N>\r\n");
   chprintf(chp, "where <N> is time in seconds sins Unix epoch\r\n");
   chprintf(chp, "you can get current N value from unix console by the command\r\n");
-  chprintf(chp, ">date +\%s\r\n");
+  chprintf(chp, ">date +%s\r\n");
   return;
 }
 

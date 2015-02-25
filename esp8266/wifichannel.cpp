@@ -21,6 +21,10 @@ static uint8_t queue_buff2[QUEUEBUF_SIZ];
 static uint8_t queue_buff3[QUEUEBUF_SIZ];
 static uint8_t queue_buff4[QUEUEBUF_SIZ];
 
+// The output queue used to send command
+// and data to the esp8266
+//static uint8_t queue_buffin[QUEUEBUF_SIZ];
+
 static void notify(GenericQueue *qp) {
   (void)qp;
 }
@@ -32,6 +36,9 @@ static INPUTQUEUE_DECL(iq1, queue_buff1, QUEUEBUF_SIZ, notify, NULL);
 static INPUTQUEUE_DECL(iq2, queue_buff2, QUEUEBUF_SIZ, notify, NULL);
 static INPUTQUEUE_DECL(iq3, queue_buff3, QUEUEBUF_SIZ, notify, NULL);
 static INPUTQUEUE_DECL(iq4, queue_buff4, QUEUEBUF_SIZ, notify, NULL);
+
+//static OUTPUTQUEUE_DECL(iqin, queue_buffin, QUEUEBUF_SIZ, NULL, NULL);
+
 
 esp_channel _esp_channels[MAX_CONNECTIONS] = {
       { 0, TCP, CHANNEL_UNUSED, true, "", 0, 0, &iq0 },

@@ -48,7 +48,6 @@ typedef enum {
     CHANNEL_DISCONNECTED
 } esp_channel_status;
 
-
 esp_channel * getChannel(int d);
 
 int wifiInit(int mode, SerialDriver * usart, SerialDriver * dbg);
