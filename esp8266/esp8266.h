@@ -69,6 +69,25 @@ typedef struct {
   int status[ESP8266_MAX_CONNECTIONS];
 } IPStatus;
 
+
+
+typedef enum {
+  RET_INVAL         = 0x00000000,
+  RET_NONE          = 0x00000001,
+  RET_OK            = 0x00000010,
+  RET_READY         = 0x00000100,
+  RET_LINKED        = 0x00001000,
+  RET_SENT          = 0x00010000,
+  RET_UNLINK        = 0x00100000,
+  RET_ERROR         = 0x01000000,
+  RET_ALREADY_CONNECTED = 0x10000000
+} EspRetVal;
+
+typedef struct {
+  EspRetVal retval;
+  char retstr[100];
+} EspReturn;
+
 SerialDriver * getSerialDriver(void);
 
 // Right now, there can be one user of

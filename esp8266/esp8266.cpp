@@ -12,7 +12,7 @@ static BaseSequentialStream * usart = NULL;
 static BaseSequentialStream * dbgstrm = NULL;
 
 #define RXBUFF_SIZ 2048
-#define TXBUFF_SIZ 2048
+#define TXBUFF_SIZ 200
 
 #define READ_TIMEOUT 1000 // uart read timeout on 1000 ticks
 #define WRITE_TIMEOUT 1000 // uart write timeout on 1000 ticks
@@ -30,6 +30,17 @@ typedef enum {
     WIFI_INITIALIZED,
     WIFI_AP_CONNECTED
 } WIFI_STATUS;
+
+static const EspReturn returnValues[] = {
+   { RET_ALREADY_CONNECTED, "LINK IS BUILDED\r\n" },
+   { RET_SENT,              "SEND OK\r\n"},
+   { RET_UNLINK,            "UNLINK\r\n" },
+   { RET_LINKED,            "LINKED\r\n" },
+   { RET_READY,             "ready\r\n"  },
+   { RET_OK,                "OK\r\n"     },
+   { RET_NONE,              "\r\n"       },
+   { RET_INVAL,             ""           }
+};
 
 static WIFI_STATUS espStatus = WIFI_RESET;
 
@@ -178,6 +189,28 @@ int esp8266ReadLinesUntil(char * resp, responselinehandler handler)
   }
 
   return numlines;
+}
+
+int esp8266ReadLinesUntil(int termval)
+{
+  int i;
+
+  while(esp8266ReadBuffUntil(rxbuff, 200, "\r\n") > 0)
+  {
+    // If we found our line
+    i = 0;
+    while(returnValues[i].retval != 0)
+    {
+      if (strstr(rxbuff, returnValues[i].retstr) != NULL)
+      {
+        // If it matches one of the response values
+        if ((returnValues[i].retval & termval) > 0)
+          return returnValues[i].retval;
+      }
+      i++;
+    }
+  }
+  return RET_INVAL;
 }
 
 bool esp8266Cmd(const char * cmd, const char * rsp, int cmddelay)
