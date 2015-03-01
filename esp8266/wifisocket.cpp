@@ -232,6 +232,42 @@ int connect(int sockfd, const sockaddr *addr, socklen_t addrlen)
     return -1;
 }
 
+int bind(int sockfd, const sockaddr * addr, long addrlen)
+{
+  // bind simply specify the bind address (local host and port).
+  sockaddr_in * source;
+  esp_channel * channel = getChannel(sockfd);
+
+  if(!channel) return -1;
+
+  // addr is an outbound address ... cast to sockaddr_in
+  if (addrlen == sizeof(sockaddr_in))
+  {
+    source = (sockaddr_in *) addr;
+    channel->localport = ntohs(source->sin_port);
+    strcpy(channel->localaddress, inet_ntoa((const in_addr*) &source->sin_addr));
+
+    return 0;
+  }
+
+  return -1;
+}
+
+// Accept blocks until we have a connection ready
+int accept(int sockfd, sockaddr * addr, socklen_t * addrlen)
+{
+
+}
+
+int listen(int sockfd, long backlog)
+{
+  // Simply mark this as a passive socket
+  esp_channel * channel = getChannel(sockfd);
+  if(!channel) return -1;
+
+  channel->ispassive = true;
+}
+
 int send(int sockfd, const void *msg, int len, int flags)
 {
     return channelSend(sockfd, (const char *) msg, len);
@@ -239,7 +275,22 @@ int send(int sockfd, const void *msg, int len, int flags)
 
 int sendto(int sockfd, const void * buf, int len, int flags, const sockaddr * to, socklen_t tolen)
 {
-   return -1; 
+  sockaddr_in * dest;
+  char ipaddress[100];
+  unsigned short port;
+
+  if (tolen == sizeof(sockaddr_in))
+  {
+      dest = (sockaddr_in *) to;
+      // ntohs
+      port = ntohs(dest->sin_port);
+      // convert the ip address (canonical/interger format)
+      strcpy(ipaddress, inet_ntoa((const in_addr*) &dest->sin_addr));
+
+      return channelSendTo(sockfd, (const char *) buf, len, ipaddress, port);
+  }
+
+  return -1;
 }
 
 int recv(int sockfd, void *buf, int len, int flags)

@@ -41,11 +41,11 @@ static INPUTQUEUE_DECL(iq4, queue_buff4, QUEUEBUF_SIZ, notify, NULL);
 
 
 esp_channel _esp_channels[MAX_CONNECTIONS] = {
-      { 0, TCP, CHANNEL_UNUSED, true, "", 0, "127.0.0.1", 0, &iq0 },
-      { 1, TCP, CHANNEL_UNUSED, true, "", 0, "127.0.0.1", 0, &iq1 },
-      { 2, TCP, CHANNEL_UNUSED, true, "", 0, "127.0.0.1", 0, &iq2 },
-      { 3, TCP, CHANNEL_UNUSED, true, "", 0, "127.0.0.1", 0, &iq3 },
-      { 4, TCP, CHANNEL_UNUSED, true, "", 0, "127.0.0.1", 0, &iq4 },
+      { 0, TCP, CHANNEL_UNUSED, false, "", 0, "127.0.0.1", 0, &iq0 },
+      { 1, TCP, CHANNEL_UNUSED, false, "", 0, "127.0.0.1", 0, &iq1 },
+      { 2, TCP, CHANNEL_UNUSED, false, "", 0, "127.0.0.1", 0, &iq2 },
+      { 3, TCP, CHANNEL_UNUSED, false, "", 0, "127.0.0.1", 0, &iq3 },
+      { 4, TCP, CHANNEL_UNUSED, false, "", 0, "127.0.0.1", 0, &iq4 },
 };
 
 static SerialDriver * dbgstrm = NULL;
@@ -59,6 +59,17 @@ esp_channel * getChannel(int d)
 }
 
 static MUTEX_DECL(usartmtx);
+
+static void onConnectionStatus(ConStatus * constatus)
+{
+  if(constatus)
+  {
+    chprintf((BaseSequentialStream *) dbgstrm,
+             ">> Id[%d] Type[%d] IP [%s], port[%d], isserver[%d]\r\n",
+             constatus->id, constatus->type, constatus->srcaddress,
+             constatus->port, constatus->clisrv);
+  }
+}
 
 static void onLineStatus(IPStatus * ipstatus)
 {
@@ -88,7 +99,7 @@ static msg_t channelListenerThread(void * arg)
     // continuously reads the tx circular buffers for
     // each connection and send data to wifi chip
     (void)arg;
-    int bytestoread, numread, status, numwritten;
+    int retval, numread, param, numwritten;
     int chanid, c; //, pollcount = 0;
     esp_channel * channel;
     SerialDriver * sdp = getSerialDriver();
@@ -112,8 +123,8 @@ static msg_t channelListenerThread(void * arg)
             //chprintf((BaseSequentialStream *)dbgstrm, "<< Got data ...\r\n!");
             // Read the data and determine to which connection
             // it needs to be sent to
-            bytestoread = esp8266ReadRespHeader(&chanid, &status, 2000);
-            if ((bytestoread > 0) && (status == 2))
+            retval = esp8266ReadRespHeader(&chanid, &param, 2000);
+            if ((param > 0) && (retval == RET_IPD))
             {
                 channel = getChannel(chanid);
                 //chprintf((BaseSequentialStream *)dbgstrm, "<< %d Data on channel %d\r\n", bytestoread, chanid);
@@ -124,7 +135,7 @@ static msg_t channelListenerThread(void * arg)
                 {
                   //chprintf((BaseSequentialStream *)dbgstrm, "<< Reading %d data ...\r\n", bytestoread);
                   numread = 0; numwritten = 0;
-                  while(numread < bytestoread)
+                  while(numread < param)
                   {
                     c = sdGet(sdp); //  c = sdGetTimeout(sdp, 1000);
                     if (c >= 0) 
@@ -145,20 +156,20 @@ static msg_t channelListenerThread(void * arg)
                 }
             }
 
-            if (status == 0)
+            if ((retval == RET_UNLINK) || (retval == RET_LINKED))
             {
               // If we receive an "Unlink" after reading,
-              // we need to issu a CIPSTATUS in order to let us
+              // we need to issue a CIPSTATUS in order to let us
               // know what channel it belongs...
               //esp8266CmdCallback("AT+CIPSTATUS", "OK\r\n", onLineStatus);
-              esp8266GetIpStatus(onLineStatus);
+              esp8266GetIpStatus(onLineStatus,onConnectionStatus);
             }
-        }
+        } // has data
 
         chMtxUnlock();
 
         // Let other threads run ...
-        chThdSleepMicroseconds(100);
+        chThdSleepMicroseconds(10);
     }
 
     return RDY_OK;
@@ -171,6 +182,9 @@ int wifiInit(int mode, SerialDriver * usart, SerialDriver * dbg)
     dbgstrm = dbg;
 
     chMtxInit(&usartmtx);
+
+    // Initialize the read in queue
+    //chOQInit(&iqin, queue_buffin, QUEUEBUF_SIZ, NULL, NULL);
 
     // Initialize all the queues here
     chIQInit(&iq0, queue_buff0, QUEUEBUF_SIZ, notify, NULL);
@@ -215,7 +229,7 @@ int channelOpen(int conntype)
 
 int channelConnect(int channel, const char * ipaddress, uint16_t port)
 {
-    int status = -1;
+    int status = -1, retval;
     esp_channel * ch = getChannel(channel);
 
     if(!ch) return -1; // channel does not exist
@@ -229,8 +243,11 @@ int channelConnect(int channel, const char * ipaddress, uint16_t port)
     //chprintf((BaseSequentialStream *)dbgstrm, "<< Acquiring lock ...\r\n");
     chMtxLock(&usartmtx);
 
-    if ( esp8266Connect(channel, ipaddress, port, ch->type)) 
+    retval = esp8266Connect(channel, ipaddress, port, ch->type);
+    // chprintf((BaseSequentialStream *)dbgstrm, "<< Connect returned %d!\r\n", retval);
+    if ((retval == RET_OK) || (retval == RET_LINKED))
     {
+
         // Once connected, set the status of the channel
         // array.
         ch->status = CHANNEL_CONNECTED;
@@ -250,6 +267,7 @@ int channelConnect(int channel, const char * ipaddress, uint16_t port)
     // return with status
     return status;
 }
+
 
 bool channelIsConnected(int channel)
 {
@@ -335,6 +353,21 @@ int channelSend(int channel, const char * msg, int msglen)
 
     return numsend;
 }
+
+int channelSendTo(int channel, const char * msg, int msglen, const char * ipaddress, uint16_t port)
+{
+  esp_channel * ch = getChannel(channel);
+  if(ch)
+  {
+    if (channelConnect(channel, ipaddress, port) < 0)
+      return -1;
+    return channelSend(channel, msg, msglen);
+  }
+
+  return -1;
+}
+
+
 
 int channelRead(int chanid, char * buff, int msglen)
 {

@@ -24,7 +24,7 @@ extern "C" {
  **/
 #define MAX_CONNECTIONS 5
 
- enum wifiModes {
+enum wifiModes {
       WIFI_MODE_STA = 1,
       WIFI_MODE_AP,
       WIFI_MODE_APSTA
@@ -35,7 +35,7 @@ typedef struct {
    int id; 
    int type;
    int status;
-   bool isblocking; // affects how we read from the channel
+   bool ispassive; // affects how we read from the channel
    char ipaddress[IPADDR_MAX_SIZ]; // can be a string
    uint16_t port;
    char localaddress[IPADDR_MAX_SIZ];
@@ -49,6 +49,18 @@ typedef enum {
     CHANNEL_DISCONNECTED
 } esp_channel_status;
 
+enum {
+  CMD_SEND,
+  CMD_SENDTO,
+  CMD_RECVFROM
+};
+
+typedef struct {
+  int cmd;
+  int channel;
+  int numbytes;
+} esp_channel_cmd;
+
 esp_channel * getChannel(int d);
 
 int wifiInit(int mode, SerialDriver * usart, SerialDriver * dbg);
@@ -61,6 +73,7 @@ int channelOpen(int conntype);
 //int channelPrint(int channel, const char * format, ...);
 bool channelSendLine(int channel, const char * msg);
 int channelSend(int channel, const char * msg, int msglen);
+int channelSendTo(int channel, const char * msg, int msglen, const char * ipaddress, uint16_t port);
 int channelRead(int channel, char * buff, int msglen);
 int channelGet(int channel);
 

@@ -12,7 +12,7 @@
 extern "C" {
 #endif
 
-//#define DEBUG 1
+#define DEBUG 1
 
 #ifdef DEBUG
 #define DBG(X, ...)    if(dbgstrm) chprintf(dbgstrm, X, ##__VA_ARGS__ )
@@ -69,22 +69,32 @@ typedef struct {
   int status[ESP8266_MAX_CONNECTIONS];
 } IPStatus;
 
+typedef struct {
+  int id;
+  int type;
+  char srcaddress[100];
+  int port;
+  int clisrv;
+} ConStatus;
 
 
-typedef enum {
-  RET_INVAL         = 0x00000000,
-  RET_NONE          = 0x00000001,
-  RET_OK            = 0x00000010,
-  RET_READY         = 0x00000100,
-  RET_LINKED        = 0x00001000,
-  RET_SENT          = 0x00010000,
-  RET_UNLINK        = 0x00100000,
-  RET_ERROR         = 0x01000000,
-  RET_ALREADY_CONNECTED = 0x10000000
-} EspRetVal;
+
+#define  RET_INVAL      -1
+#define  RET_NONE       0x0001
+#define  RET_OK         0x0002
+#define  RET_READY      0x0004
+#define  RET_LINKED     0x0008
+#define  RET_SENT       0x0010
+#define  RET_UNLINK     0x0020
+#define  RET_ERROR      0x0040
+#define  RET_ALREADY_CONNECTED 0x0080
+#define  RET_CONNECT    0x0100
+#define  RET_CLOSED     0x0200
+#define  RET_IPD        0x0400
+#define  RET_NOCHANGE   0x0800
 
 typedef struct {
-  EspRetVal retval;
+  int retval;
   char retstr[100];
 } EspReturn;
 
@@ -104,15 +114,11 @@ bool esp8266HasData(void);
 // Read esp8266 untill a certain string is received.
 // Read (discard characters read), until resp is read
 bool esp8266ReadUntil(const char * resp, int timeout);
-// 2 types of terminating string
-int esp8266ReadSwitch2(const char * resp1, const char * resp2, int timeout);
-// 3 types of terminating string
-int esp8266ReadSwitch3(const char * resp1, const char * resp2, const char * resp3, int timeout);
 // Read to buffer/len until resp is read (resp will be
 // included in the buffer). Returns number of bytes read
 // or negative if len can not hold the number of bytes
 // needed to be read.
-int esp8266ReadBuffUntil(char * buffer, int len, const char * resp);
+int esp8266ReadBuffUntil(char * buffer, int len, const char * resp, int timeout);
 // A variant of the same function, but takes a function
 // pointer which will be called for each line encountered.
 typedef void (*responselinehandler)(const char * data, int len);
@@ -136,20 +142,21 @@ typedef void (*onNewAP)(APInfo * info);
 int esp8266ListAP(onNewAP apCallback);
 // Get the status of the connection
 typedef void (*onIPStatus)(IPStatus * info);
-int esp8266GetIpStatus(onIPStatus handler);
+typedef void (*onConStatus)(ConStatus * info);
+int esp8266GetIpStatus(onIPStatus iphandler, onConStatus stathandler);
 //int esp8266GetIpStatus(int channel);
 const char * esp8266GetFirmwareVersion(void);
 const char * esp8266GetIPAddress(void);
 bool esp8266SetMode(int mode);
 
 // Client API
-bool esp8266Connect(int channel, const char * ip, uint16_t port, int type);
+int esp8266Connect(int channel, const char * ip, uint16_t port, int type);
 bool esp8266SendLine(int channel, const char * str);
 
 bool esp8266SendHeader(int channel, int datatosend);
 int esp8266Send(const char * data, int len);
 
-int esp8266ReadRespHeader(int * channel, int * status, int timeout);
+int esp8266ReadRespHeader(int * channel, int * param, int timeout);
 int esp8266Read(char * buffer, int buflen);
 
 bool esp8266Disconnect(int channel);

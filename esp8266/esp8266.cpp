@@ -33,14 +33,20 @@ typedef enum {
 
 static const EspReturn returnValues[] = {
    { RET_ALREADY_CONNECTED, "LINK IS BUILDED\r\n" },
-   { RET_SENT,              "SEND OK\r\n"},
-   { RET_UNLINK,            "UNLINK\r\n" },
-   { RET_LINKED,            "LINKED\r\n" },
-   { RET_READY,             "ready\r\n"  },
-   { RET_OK,                "OK\r\n"     },
-   { RET_NONE,              "\r\n"       },
-   { RET_INVAL,             ""           }
+   { RET_NOCHANGE,          "no change\r\n" },
+   { RET_SENT,              "SEND OK\r\n" },
+   { RET_ERROR,             "ERROR\r\n" },
+   { RET_UNLINK,            "Unlink\r\n" },
+   { RET_LINKED,            "Linked\r\n" },
+   { RET_CLOSED,            ",CLOSED\r\n" },
+   { RET_CONNECT,           ",CONNECT\r\n" },
+   { RET_READY,             "ready\r\n" },
+   { RET_IPD,               "+IPD,"  },
+   { RET_OK,                "OK\r\n" },
+   { RET_NONE,              "\r\n" },
 };
+
+#define NUM_RESPONSES sizeof(returnValues)/sizeof(EspReturn)
 
 static WIFI_STATUS espStatus = WIFI_RESET;
 
@@ -85,7 +91,8 @@ bool esp8266ReadUntil(const char * resp, int timeout)
     return false;
 }
 
-int esp8266ReadSwitch2(const char * resp1, const char * resp2, int timeout)
+#if 0
+static int esp8266ReadSwitch2(const char * resp1, const char * resp2, int timeout)
 {
   int c;
   int index1 = 0, index2 = 0;
@@ -108,8 +115,7 @@ int esp8266ReadSwitch2(const char * resp1, const char * resp2, int timeout)
 
   return -1; // none matched or timed out
 }
-
-int esp8266ReadSwitch3(const char * resp1, const char * resp2, const char * resp3, int timeout)
+static int esp8266ReadSwitch3(const char * resp1, const char * resp2, const char * resp3, int timeout)
 {
   int c;
   int index1 = 0, index2 = 0, index3 = 0;
@@ -137,8 +143,69 @@ int esp8266ReadSwitch3(const char * resp1, const char * resp2, const char * resp
 
   return -1; // none matched or timed out
 }
+#endif
 
-int esp8266ReadBuffUntil(char * buffer, int len, const char * resp)
+static int esp8266ReadSwitch(int retvals, char * buffer, int * bufsiz, int timeout)
+{
+  int index[NUM_RESPONSES];
+  int lens[NUM_RESPONSES];
+  int numstored, i, x, c, numlen;
+
+  if (!buffer || !bufsiz) return -1;
+
+  numlen = NUM_RESPONSES;
+  for (i = 0; i < numlen; i++)
+  {
+    index[i] = 0;
+    lens[i] = strlen(returnValues[i].retstr);
+  }
+
+  numstored = 0;
+  while((c = sdGetTimeout((SerialDriver *) usart, timeout)) > 0)
+  {
+     if (numstored < *bufsiz)
+     {
+       buffer[numstored] = c;
+       numstored++;
+       DBG("%c", c);
+
+       // Evaluate if this belongs to the
+       // list of return values
+       for(x = 0; x < numlen; x++)
+       {
+         if (c != returnValues[x].retstr[index[x]])  index[x] = 0;
+         if (c == returnValues[x].retstr[index[x]])
+           if(++(index[x]) >= lens[x])
+           {
+             if (retvals & returnValues[x].retval)
+             {
+               buffer[numstored] = 0;
+               *bufsiz = numstored;
+               DBG("\r\n**Got [%s], returning %d\r\n",
+                   buffer, returnValues[x].retval);
+               return returnValues[x].retval;
+             }
+           }
+       }
+
+       // Reset the buffer on a newline or linefeed
+       if ((numstored >= 2) &&
+           (buffer[numstored-2] == '\r') &&
+           (buffer[numstored-1] == '\n')
+         )
+           numstored = 0;
+
+     }else
+       break;
+  }
+
+  buffer[numstored] = 0;
+  *bufsiz = numstored;
+  DBG("\r\n**Got [%s], returning with -1\r\n", buffer);
+  return -1;
+}
+
+int esp8266ReadBuffUntil(char * buffer, int len, const char * resp, int timeout)
 {
     int c;
     int index = 0;
@@ -148,7 +215,7 @@ int esp8266ReadBuffUntil(char * buffer, int len, const char * resp)
     memset(buffer, 0, len);
     do
     {
-        c = sdGet((SerialDriver *) usart);
+        c = sdGetTimeout((SerialDriver *) usart, timeout);
         if (c >= 0) {
             DBG("%c", c);
             if (numread < len)
@@ -177,7 +244,7 @@ int esp8266ReadLinesUntil(char * resp, responselinehandler handler)
   int numlines = 0, numread = 0;
   char linebuff[200];
 
-  while((numread = esp8266ReadBuffUntil(linebuff, 200, "\r\n")) > 0)
+  while((numread = esp8266ReadBuffUntil(linebuff, 200, "\r\n", READ_TIMEOUT)) > 0)
   {
     // If we found our line
     if (strstr(linebuff, resp) != NULL)
@@ -189,28 +256,6 @@ int esp8266ReadLinesUntil(char * resp, responselinehandler handler)
   }
 
   return numlines;
-}
-
-int esp8266ReadLinesUntil(int termval)
-{
-  int i;
-
-  while(esp8266ReadBuffUntil(rxbuff, 200, "\r\n") > 0)
-  {
-    // If we found our line
-    i = 0;
-    while(returnValues[i].retval != 0)
-    {
-      if (strstr(rxbuff, returnValues[i].retstr) != NULL)
-      {
-        // If it matches one of the response values
-        if ((returnValues[i].retval & termval) > 0)
-          return returnValues[i].retval;
-      }
-      i++;
-    }
-  }
-  return RET_INVAL;
 }
 
 bool esp8266Cmd(const char * cmd, const char * rsp, int cmddelay)
@@ -229,19 +274,23 @@ bool esp8266Cmd(const char * cmd, const char * rsp, int cmddelay)
 
 }
 
-bool esp8266CmdX(const char * cmd, const char * rsp)
+static int esp8266CmdX(const char * cmd, int returns, int cmddelay, int timeout)
 {
-    if (usart)
-    {
-        // Send the command to the wifi chip
-        chprintf(usart, "%s\r\n", cmd);
-        DBG(">>%s\r\n", cmd);
+  int bufsiz = RXBUFF_SIZ;
+  if (usart)
+  {
+      // Send the command to the wifi chip
+      chprintf(usart, "%s\r\n", cmd);
+      DBG(">>%s\r\n", cmd);
+      if (cmddelay > 0)
+          chThdSleepMilliseconds(cmddelay);
 
-        return esp8266ReadUntil(rsp, TIME_INFINITE);
-    }else
-        return false;
-
+      return esp8266ReadSwitch(returns, rxbuff, &bufsiz, timeout);
+  }
+  return -1;
 }
+
+
 /*
 bool esp8266Dta(const char * cmd, const char * rsp, int cmddelay)
 {
@@ -279,7 +328,7 @@ int esp8266CmdRsp(const char * cmd, const char * term, char * buffer, int buflen
         for (int i = 0; i < respline; i++)
             esp8266ReadUntil("\r\n", READ_TIMEOUT);
         // Read the response
-        numread = esp8266ReadBuffUntil(buffer, buflen, "\r\n" );
+        numread = esp8266ReadBuffUntil(buffer, buflen, "\r\n", READ_TIMEOUT);
         // continue reading until terminating string
         esp8266ReadUntil(term, READ_TIMEOUT);
 
@@ -307,7 +356,7 @@ int esp8266Init(SerialDriver * driver, int mode, SerialDriver * dbg)
 
     //chMtxInit(&usartmtx);
 
-    if (!esp8266CmdX("AT+RST\r\n", "ready\r\n"))
+    if (!esp8266Cmd("AT+RST\r\n", "ready\r\n", 1000))
     {
         chprintf(dbgstrm, "Failed to reset ESP8266!\r\n");
         return WIFI_ERR_RESET;
@@ -337,7 +386,7 @@ int esp8266ListAP(onNewAP apCallback)
 
   chprintf(usart, "AT+CWLAP\r\n");
   DBG(">>AT+CWLAP\r\n");
-  while((numread = esp8266ReadBuffUntil(rxbuff, RXBUFF_SIZ, "\r\n")) > 0)
+  while((numread = esp8266ReadBuffUntil(rxbuff, RXBUFF_SIZ, "\r\n", TIME_INFINITE)) > 0)
   {
     // If we found our line
     if (strstr(rxbuff, "OK\r\n") != NULL)
@@ -378,7 +427,7 @@ int esp8266ConnectAP(const char *ssid, const char *password)
     ssid,
     password);
 
-  if (esp8266Cmd(txbuff, "OK\r\n", 5000))
+  if (esp8266CmdX(txbuff, RET_OK, 5000, TIME_INFINITE) > 0)
   {
     espStatus = WIFI_AP_CONNECTED;
     if (dbgstrm) chprintf(dbgstrm, "Success!\r\n");
@@ -392,7 +441,14 @@ int esp8266ConnectAP(const char *ssid, const char *password)
   if (dbgstrm) chprintf(dbgstrm, "Assigned IP [%s]\r\n", esp8266GetIPAddress());
 
 
-  if (!esp8266Cmd("AT+CIPMUX=1\r\n", "OK\r\n", 1000))
+//  if (esp8266CmdX("AT+CIPMODE=1\r\n", RET_OK | RET_ERROR, 100, TIME_INFINITE) != RET_OK)
+//  {
+//     if(dbgstrm) chprintf(dbgstrm, "ESP8266 Setting CIPMODE Failed!!\r\n");
+//     return WIFI_ERR_MUX;
+//  }
+
+
+  if (esp8266CmdX("AT+CIPMUX=1\r\n", RET_OK | RET_ERROR, 100, TIME_INFINITE) != RET_OK)
   {
       if (dbgstrm) chprintf(dbgstrm, "ESP8266 Setting MUX Failed!!\r\n");
       return WIFI_ERR_MUX;
@@ -409,7 +465,7 @@ bool esp8266DisconnectAP(void)
 bool esp8266SetMode(int mode)
 {
   chsnprintf(txbuff, 200, "AT+CWMODE=%d\r\n", mode);
-  return esp8266Cmd(txbuff, "OK\r\n", 1000);
+  return (esp8266CmdX(txbuff, RET_OK | RET_NOCHANGE, 100, TIME_INFINITE) == RET_OK );
 }
 
 static void ongetfirmwareversion(const char * buffer, int len)
@@ -430,30 +486,54 @@ const char * esp8266GetFirmwareVersion(void)
 
 const char * esp8266GetIPAddress(void)
 {
-  if (strlen(assignedIP) > 0 ) return assignedIP;
+  int numread, numline = 0;
+  //char temp[100], * loc;
 
-  if (esp8266CmdRsp("AT+CIFSR\r\n", "OK\r\n", rxbuff, RXBUFF_SIZ, 2) > 0)
+  chprintf(usart, "AT+CIFSR\r\n");
+  DBG(">>AT+CIFSR\r\n");
+
+  assignedIP[0] = 0;
+  // Parse all response lines
+  while((numread = esp8266ReadBuffUntil(rxbuff, RXBUFF_SIZ, "\r\n", READ_TIMEOUT)) > 0)
   {
-    strcpy(assignedIP, strip(rxbuff, '\r'));
-    return (const char *) assignedIP;
+    // If we found our line
+    if (strstr(rxbuff, "OK\r\n") != NULL)
+      break;
+
+    strip(rxbuff, '\r');
+    DBG("CIFSR [%s]\r\n", rxbuff);
+
+    //if ((loc = strstr(rxbuff, "+CIFSR:STAIP,\"")) != NULL)
+    if (numline == 2)
+    {
+      // store the station ip
+      //strcpy(temp, loc + 14);
+      //strip(temp, '\r');
+      strcpy(assignedIP, rxbuff);
+    }
+
+    numline++;
   }
 
-  return NULL;
+  if (strlen(assignedIP) == 0) return NULL;
+
+  return (const char *) assignedIP;
 }
 
 
-int esp8266GetIpStatus(onIPStatus handler)
+int esp8266GetIpStatus(onIPStatus iphandler, onConStatus stathandler)
 {
   int numlines = 0, numread = 0;
   int status = WIFI_CONN_UNKNWN, chanid;
   IPStatus ipstatus;
+  char * p, tmp[100];
 
   for (int i = 0; i < ESP8266_MAX_CONNECTIONS; i++)
     ipstatus.status[i] = WIFI_CONN_DISCONNECTED;
 
   chprintf(usart, "AT+CIPSTATUS\r\n");
   DBG(">>AT+CIPSTATUS\r\n");
-  while((numread = esp8266ReadBuffUntil(rxbuff, RXBUFF_SIZ, "\r\n")) > 0)
+  while((numread = esp8266ReadBuffUntil(rxbuff, RXBUFF_SIZ, "\r\n", READ_TIMEOUT)) > 0)
   {
     // If we found our line
     if (strstr(rxbuff, "OK\r\n") != NULL)
@@ -473,9 +553,40 @@ int esp8266GetIpStatus(onIPStatus handler)
 
     if (strstr(rxbuff, "+CIPSTATUS:") != NULL)
     {
-      chanid = atoi(rxbuff + 11);
+      p = strtok(rxbuff + 11, ",");
+      if (p) chanid = atoi(p);
+
       if ((chanid >= 0) && (chanid < ESP8266_MAX_CONNECTIONS))
       {
+        ConStatus constatus;
+
+        constatus.id = chanid;
+        p = strtok(NULL, ",");
+        if (p)
+        {
+          strcpy(tmp, p);
+          constatus.type = (strstr(tmp, "TCP") != NULL) ? TCP: UDP;
+        }
+        p = strtok(NULL, ",");
+        if (p)
+        {
+          strcpy(tmp, p+1);
+          strip(tmp, '\"');
+          strcpy(constatus.srcaddress, tmp);
+        }
+        p = strtok(NULL, ",");
+        if (p)
+        {
+          constatus.port = atoi(p);
+        }
+        p = strtok(NULL, ",");
+        if (p)
+        {
+          constatus.clisrv = atoi(p);
+        }
+
+        if(stathandler) stathandler(&constatus);
+
         DBG("Status = %d, Detected channel = %d\r\n", status, chanid);
         ipstatus.status[chanid] = status;
       }else
@@ -486,12 +597,12 @@ int esp8266GetIpStatus(onIPStatus handler)
     numlines++;
   }
 
-  if(handler) handler(&ipstatus);
+  if(iphandler) iphandler(&ipstatus);
 
   return status;
 }
 
-bool esp8266Connect(int channel, const char * ip, uint16_t port, int type)
+int esp8266Connect(int channel, const char * ip, uint16_t port, int type)
 {
     // Simply send the data over the channel.
     chsnprintf(txbuff, TXBUFF_SIZ, "AT+CIPSTART=%d,\"%s\",\"%s\",%d\r\n",
@@ -500,8 +611,9 @@ bool esp8266Connect(int channel, const char * ip, uint16_t port, int type)
         ip,
         port);
 
-    return esp8266Cmd(txbuff, "Linked\r\n", 1000);
-    //return esp8266Cmd(txbuff, "OK\r\n", 100);
+    // For my particular firmware AT+CIPSTART returns "LINKED" and
+    // "UNLINK"
+    return esp8266CmdX(txbuff, RET_LINKED | RET_UNLINK , 100, TIME_INFINITE);
 }
 
 bool esp8266Disconnect(int channel)
@@ -553,7 +665,7 @@ bool esp8266SendHeader(int channel, int datatosend)
 
 int esp8266Send(const char * data, int len)
 {
-    int numsent = 0, retval;
+    int numsent = 0, bufsiz;
 
     do {
       //retval = sdPutTimeout((SerialDriver *) usart, data[numsent], WRITE_TIMEOUT);
@@ -563,6 +675,8 @@ int esp8266Send(const char * data, int len)
       numsent++;
     }while(numsent < len);
 
+
+
 #ifdef DEBUG
     if (numsent > 0)
     {
@@ -570,49 +684,55 @@ int esp8266Send(const char * data, int len)
       hexdump(dbgstrm, (void *) data, numsent);
     }
 #endif
-    // TODO: What if send gets an error?
-    // My esp8266 returns a bunch of lines:
-    // ERROR\r\n <- Why!!??
-    // SEND OK\r\n
-    // Need to revisit this.
-    //retval = esp8266ReadSwitch2("ERROR\r\n", "SEND OK\r\n", READ_TIMEOUT);
-    //if (retval <= 0 )
-    //  return -1;
 
-    if (!esp8266ReadUntil("SEND OK\r\n", READ_TIMEOUT))
-      return -1;
+   // while(esp8266ReadUntil("SEND OK\r\n", READ_TIMEOUT) < 1);
+   bufsiz = RXBUFF_SIZ;
+   esp8266ReadSwitch(RET_SENT, rxbuff, &bufsiz, TIME_INFINITE);
 
-    return numsent;
+   return numsent;
 }
 
-int esp8266ReadRespHeader(int * channel, int * status, int timeout)
+int esp8266ReadRespHeader(int * channel, int * param, int timeout)
 {
   char *p = NULL;
-  int bytestoread = 0, numread = 0;
+  int numread = 0, bufsiz = RXBUFF_SIZ, retval;
 
   // Discard data until we receive part of the header
   DBG(">>Waiting for message header ...\r\n");
   // Read loop until we have a status
-  *status = esp8266ReadSwitch3("Unlink\r\n", "OK\r\n", "+IPD,", timeout);
-  DBG(">>Status = %d\r\n", *status);
-  if(*status == 2)
+  retval = esp8266ReadSwitch(RET_ERROR |
+                             RET_UNLINK |
+                             RET_LINKED |
+                             RET_CONNECT |
+                             RET_CLOSED |
+                             RET_IPD, rxbuff, &bufsiz, timeout);
+  DBG(">>Retval = %d\r\n", retval);
+  if(retval == RET_IPD)
   {
       DBG(">>Read the +IPD, reading message length and channel ..\r\n");
       // Read header information (up until the ":")
       memset(rxbuff, 0, RXBUFF_SIZ);
-      if ((numread = esp8266ReadBuffUntil(rxbuff, RXBUFF_SIZ, ":")) > 0)
+      if ((numread = esp8266ReadBuffUntil(rxbuff, RXBUFF_SIZ, ":", READ_TIMEOUT)) > 0)
       {
           // Parse header information for
           // Channel and number of bytes
           p = strtok(rxbuff, ",");
           if (p) *channel = atoi(p);
           p = strtok(NULL, ",");
-          if (p) bytestoread = atoi(p);
-          DBG(">>Read channel = %d, bytestoread = %d\r\n", *channel, bytestoread);
+          if (p) *param = atoi(p);
+          DBG(">>Read channel = %d, bytestoread = %d\r\n", *channel, *param);
       }
   }
 
-  return bytestoread;
+  if ((retval == RET_CONNECT) ||
+      (retval == RET_CLOSED))
+  {
+      p = strtok(rxbuff, ",");
+      if (p) *channel = atoi(p);
+      DBG(">>Read closed/connect status on channel %d.. \r\n", *channel);
+  }
+
+  return retval;
 }
 
 int esp8266Read(char * buffer, int bytestoread)
