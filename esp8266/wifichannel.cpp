@@ -270,11 +270,12 @@ int channelOpen(int conntype)
         {
             _esp_channels[i].status = CHANNEL_DISCONNECTED;
             _esp_channels[i].type = conntype;
+            chprintf((BaseSequentialStream *)dbgstrm, "<< Opening channel[%d] with type %d\r\n",
+                     i, conntype);
 
             return i;
         }
-
-    return 0;
+    return -1;
 }
 
 int channelConnect(int channel, const char * ipaddress, uint16_t port)
@@ -292,6 +293,9 @@ int channelConnect(int channel, const char * ipaddress, uint16_t port)
     // A connection request needs to lock the usart
     //chprintf((BaseSequentialStream *)dbgstrm, "<< Acquiring lock ...\r\n");
     chMtxLock(&usartmtx);
+
+    chprintf((BaseSequentialStream *)dbgstrm, "<< Opening channel[%d] [%s:%d] with %d\r\n",
+             channel, ipaddress, port, ch->type);
 
     retval = esp8266Connect(channel, ipaddress, port, ch->type);
     // chprintf((BaseSequentialStream *)dbgstrm, "<< Connect returned %d!\r\n", retval);

@@ -4,6 +4,7 @@
 
 #include <string.h>
 #include "ntp.h"
+#include "wifichannel.h"
 #include "wifisocket.h"
 #include "timeutils.h"
 
@@ -29,6 +30,7 @@ typedef struct _ntp_packet {
     unsigned long transmit_timestamp_fraq;
 } ntp_packet;
 
+#if 0
 int sntp_get(const char * hostname, int port, timeval_x *tv)
 {
     sockaddr_in sa;
@@ -67,5 +69,37 @@ int sntp_get(const char * hostname, int port, timeval_x *tv)
 
     return 0;
 }
+#endif
 
+int sntp_get(const char * hostname, int port, timeval_x *tv)
+{
+  int chanid;
+  ntp_packet pkt;
 
+  chanid = channelOpen(UDP);
+  if(chanid > 0)
+  {
+      if (channelConnect(chanid, hostname, port) > 0)
+      {
+        memset(&pkt, 0, sizeof pkt);
+        pkt.mode_vn_li = (4 << 3) | 3;
+        pkt.originate_timestamp_secs = htonl(secondsinceepoch() + NTPEPOCH);
+        if (channelSend(chanid, (const char *) &pkt, sizeof(pkt)) == sizeof(pkt))
+        {
+          // Read back the data
+          if (channelRead(chanid, (char *) &pkt, sizeof(pkt)) == sizeof(pkt))
+          {
+            // Set the time
+            tv->tv_sec = ntohl(pkt.transmit_timestamp_secs) - NTPEPOCH;
+            tv->tv_usec = ntohl(pkt.transmit_timestamp_fraq) / 4295;
+
+            close(chanid);
+            return 0;
+          }
+        }
+      }
+      close(chanid);
+  }
+
+  return -1;
+}

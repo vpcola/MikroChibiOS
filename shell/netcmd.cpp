@@ -189,7 +189,7 @@ void cmd_ntpdate(BaseSequentialStream * chp, int argc, char * argv[])
     // 0.sg.pool.ntp.org - 128.199.253.156
     // 1.sg.pool.ntp.org - 203.174.83.202
 
-    if (sntp_get("128.199.253.156", 123, &tv) < 0)
+    if (sntp_get("192.168.0.107", 123, &tv) < 0)
         return;
 
     chprintf(chp, "NTP returned %ld seconds\r\n", tv.tv_sec);

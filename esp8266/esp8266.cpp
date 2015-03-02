@@ -627,7 +627,7 @@ int esp8266Connect(int channel, const char * ip, uint16_t port, int type)
 
     // For my particular firmware AT+CIPSTART returns "LINKED" and
     // "UNLINK"
-    return esp8266CmdX(txbuff, RET_LINKED | RET_UNLINK , 100, TIME_INFINITE);
+    return esp8266CmdX(txbuff, RET_LINKED | RET_UNLINK | RET_ERROR , 100, TIME_INFINITE);
 }
 
 bool esp8266Disconnect(int channel)
