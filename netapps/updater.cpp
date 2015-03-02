@@ -58,6 +58,7 @@ static msg_t humidTempUpdater(void * arg)
           chThdSleepSeconds(10); // Sleep 10 seconds
         }while(1);
 
+        close(sockfd);
         chprintf(dbg, "[*] netupdater thread stoped, server closes connection\r\n");
       }
     }

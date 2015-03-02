@@ -10,7 +10,10 @@
  extern "C" {
 #endif
 
+#include <time.h>
 #include "hal.h"
+
+time_t secondsinceepoch();
 
 void cmd_date(BaseSequentialStream * chp, int argc, char *argv[]);
 

@@ -17,6 +17,7 @@ extern "C" {
 //void cmd_wget(BaseSequentialStream *chp, int argc, char *argv[]);
 void cmd_weather(BaseSequentialStream *chp, int argc, char *argv[]);
 void cmd_ipstat(BaseSequentialStream *chp, int argc, char *argv[]);
+void cmd_ntpdate(BaseSequentialStream * chp, int argc, char * argv[]);
 
 #ifdef __cplusplus
 }

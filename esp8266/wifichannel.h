@@ -40,7 +40,9 @@ typedef struct {
    uint16_t port;
    char localaddress[IPADDR_MAX_SIZ];
    uint16_t localport;  // Used for binding localport to socket
+   bool isservergenerated;
    InputQueue * iqueue;
+   int usecount;
 } esp_channel;
 
 typedef enum {
@@ -80,6 +82,9 @@ int channelGet(int channel);
 // Connect the channel to tcp or udp connection
 int channelConnect(int channel, const char * ipddress, uint16_t port);
 bool channelIsConnected(int channel);
+// Start a server connection on the channel
+int channelServer(int channel, int type, uint16_t port);
+
 // Closes the channel
 int channelClose(int channel);
 

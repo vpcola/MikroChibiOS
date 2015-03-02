@@ -3,12 +3,16 @@
 
 #include <stdlib.h>
 #include <string.h>
-#include <time.h>
 
 #include "chprintf.h"
 #include "chrtclib.h"
 
 static time_t unix_time;
+
+time_t secondsinceepoch()
+{
+    return rtcGetTimeUnixSec((RTCDriver *)&RTCD1);
+}
 
 void cmd_date(BaseSequentialStream * chp, int argc, char *argv[])
 {
@@ -52,7 +56,7 @@ ERROR:
   chprintf(chp, "       Tue Feb 24 14:57:09 2015 (GMT)\r\n");
   chprintf(chp, "To set the current date:\r\n");
   chprintf(chp, "       date <N>\r\n");
-  chprintf(chp, "where <N> is time in seconds sins Unix epoch\r\n");
+  chprintf(chp, "where <N> is time in seconds since Unix epoch\r\n");
   chprintf(chp, "you can get current N value from unix console by the command\r\n");
   chprintf(chp, ">date +%s\r\n");
   return;

@@ -1,4 +1,5 @@
-NETAPPSRC = $(NETAPPDIR)/updater.cpp
+NETAPPSRC = $(NETAPPDIR)/updater.cpp \
+	$(NETAPPDIR)/ntp.cpp
 
 
 NETAPPINC = $(NETAPPDIR)/

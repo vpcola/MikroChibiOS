@@ -256,7 +256,25 @@ int bind(int sockfd, const sockaddr * addr, long addrlen)
 // Accept blocks until we have a connection ready
 int accept(int sockfd, sockaddr * addr, socklen_t * addrlen)
 {
-
+    // We loop through each available channels looking for
+    // new channel opened up by the server. Once found, return
+    // the channel id. Perhaps waiting on a semaphore to get
+    // signalled maybe appropriate here
+    while(1)
+    {
+        for (int i=0; i< MAX_CONNECTIONS; i++)
+        {
+            esp_channel * ch = getChannel(i); 
+            if (ch && 
+                    ch->isservergenerated &&
+                    ch->usecount == 0)
+            {
+                ch->usecount++;
+                return i;
+            }
+        }
+        chThdSleepMicroseconds(10);
+    }
 }
 
 int listen(int sockfd, long backlog)
@@ -266,6 +284,12 @@ int listen(int sockfd, long backlog)
   if(!channel) return -1;
 
   channel->ispassive = true;
+  // Now we issue a command to start the server 
+  // here
+  if (channelServer(sockfd, channel->type, channel->localport) < 0)
+      return -1;
+
+  return 0;
 }
 
 int send(int sockfd, const void *msg, int len, int flags)

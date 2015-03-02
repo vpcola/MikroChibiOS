@@ -41,11 +41,11 @@ static INPUTQUEUE_DECL(iq4, queue_buff4, QUEUEBUF_SIZ, notify, NULL);
 
 
 esp_channel _esp_channels[MAX_CONNECTIONS] = {
-      { 0, TCP, CHANNEL_UNUSED, false, "", 0, "127.0.0.1", 0, &iq0 },
-      { 1, TCP, CHANNEL_UNUSED, false, "", 0, "127.0.0.1", 0, &iq1 },
-      { 2, TCP, CHANNEL_UNUSED, false, "", 0, "127.0.0.1", 0, &iq2 },
-      { 3, TCP, CHANNEL_UNUSED, false, "", 0, "127.0.0.1", 0, &iq3 },
-      { 4, TCP, CHANNEL_UNUSED, false, "", 0, "127.0.0.1", 0, &iq4 },
+      { 0, TCP, CHANNEL_UNUSED, false, "", 0, "127.0.0.1", 0, false, &iq0 , 0},
+      { 1, TCP, CHANNEL_UNUSED, false, "", 0, "127.0.0.1", 0, false, &iq1 , 0},
+      { 2, TCP, CHANNEL_UNUSED, false, "", 0, "127.0.0.1", 0, false, &iq2 , 0},
+      { 3, TCP, CHANNEL_UNUSED, false, "", 0, "127.0.0.1", 0, false, &iq3 , 0},
+      { 4, TCP, CHANNEL_UNUSED, false, "", 0, "127.0.0.1", 0, false, &iq4 , 0},
 };
 
 static SerialDriver * dbgstrm = NULL;
@@ -58,26 +58,63 @@ esp_channel * getChannel(int d)
     return NULL;
 }
 
+
 static MUTEX_DECL(usartmtx);
+
+static void resetChannel(esp_channel * ch)
+{
+    if (ch)
+    {
+        ch->status = CHANNEL_UNUSED;
+        ch->port = 0;
+        ch->localport = 0;
+        strncpy(ch->ipaddress, "", IPADDR_MAX_SIZ);
+        strncpy(ch->localaddress, "127.0.0.1", IPADDR_MAX_SIZ);
+        ch->isservergenerated = false;
+        ch->ispassive = false;
+        ch->type = TCP;
+        ch->usecount = 0;
+    }
+}
 
 static void onConnectionStatus(ConStatus * constatus)
 {
+
   if(constatus)
   {
+    esp_channel * ch = getChannel(constatus->id);
+
     chprintf((BaseSequentialStream *) dbgstrm,
              ">> Id[%d] Type[%d] IP [%s], port[%d], isserver[%d]\r\n",
              constatus->id, constatus->type, constatus->srcaddress,
              constatus->port, constatus->clisrv);
+    if (ch)
+    {
+        // check if this is a newly connected channel
+        if (ch->status != CHANNEL_CONNECTED)
+        {
+             // new connection, populate details here
+             ch->status = CHANNEL_CONNECTED;
+             ch->type = constatus->type;
+             ch->isservergenerated = (constatus->clisrv == 1);
+             strcpy(ch->ipaddress, constatus->srcaddress);
+             ch->port = constatus->port;
+             ch->usecount = 0; // clients first task is to increment this.
+             // TODO: We need a way to signal waiting threads that
+             // a new connection is available i.e. used by accept()
+             // call. For ChibiOS, a semaphore might be appropriate
+        }
+    }
   }
 }
 
 static void onLineStatus(IPStatus * ipstatus)
 {
-  // Currently if we receive an "Ulink" message, we do not have
+  // Currently if we receive an "Ulink" or "Linked" message, we do not have
   // a way to know which line id its coming from.
   // Hopefully a new firmware will allow us to discern which line
   // has been disconnected. This is the reason why
-  // there is a need to issu CIPSTATUS and parse the results.
+  // there is a need to issue CIPSTATUS and parse the results.
   // I wish the Unlink message should be "Unlink:<id>" which
   // would indicate which channel is disconnected.
 
@@ -86,9 +123,22 @@ static void onLineStatus(IPStatus * ipstatus)
       esp_channel * ch = getChannel(i);
       if (ch)
       {
-        ch->status = ipstatus->status[i];
-        //chprintf((BaseSequentialStream *) dbgstrm, ">> Updating channel %d with status %d\r\n",
-        //         i+1, ipstatus->status[i]);
+          // If we have a connection that has changed
+          // status
+          if ((ipstatus->status[i] == WIFI_CONN_DISCONNECTED)
+              && (ch->status == CHANNEL_CONNECTED))
+              resetChannel(ch);
+
+          switch(ipstatus->status[i])
+          {
+              case WIFI_CONN_GOTIP:
+              case WIFI_CONN_CONNECTED:
+                ch->status = CHANNEL_CONNECTED;
+                break;
+              case WIFI_CONN_DISCONNECTED:
+              default:
+                ch->status = CHANNEL_DISCONNECTED;
+          }
       }
   }
 }
@@ -113,7 +163,7 @@ static msg_t channelListenerThread(void * arg)
         //chprintf((BaseSequentialStream *)dbgstrm, "<<Waiting for data...\r\n");
         if (!chMtxTryLock(&usartmtx))
         {
-          chThdSleepMicroseconds(100);
+          chThdSleepMicroseconds(10);
           continue;
         }
 
@@ -252,8 +302,10 @@ int channelConnect(int channel, const char * ipaddress, uint16_t port)
         // array.
         ch->status = CHANNEL_CONNECTED;
         ch->port = port;
-
         strncpy(ch->ipaddress, ipaddress, IPADDR_MAX_SIZ); 
+        ch->usecount++;
+        ch->ispassive = false;
+        ch->isservergenerated = false;
         // reset the queue
         chIQResetI(ch->iqueue);
 
@@ -277,26 +329,58 @@ bool channelIsConnected(int channel)
   return false;
 }
 
-// Closes the channel
-int channelClose(int channel)
+int channelServer(int channel, int type, uint16_t port)
 {
-    bool retval = false;
+    // to create a tcp server, we don't need a
+    // channel id and type (since for now it only 
+    // supports TCP server)
     esp_channel * ch = getChannel(channel);
+
+    if(!ch) return -1;
+
+    // this must be a passive channel
+    if (!ch->ispassive) return -1;
 
     // lock the usart
     chMtxLock(&usartmtx);
 
-    retval = esp8266Disconnect(channel);
-    if (ch)
+    if (ch && (esp8266Server(channel, type, port) == RET_OK))
     {
-      ch->status = CHANNEL_UNUSED;
-      ch->port = 0;
-      strncpy(ch->ipaddress, "", IPADDR_MAX_SIZ);
+        // passive socket doesn't have a meaning for
+        // the esp8266, we only use this to pass parameters
+        // and to simulate a bind-listen-accept socket 
+        // like emulation so after we create a server 
+        // connection on the esp8266, we free up this channel.
+        resetChannel(ch);
+    }
+
+    chMtxUnlock();
+
+    return 0;
+}
+
+
+// Closes the channel
+int channelClose(int channel)
+{
+    int retval = -1;
+
+    esp_channel * ch = getChannel(channel);
+
+    if (!ch) return -1;
+
+    // lock the usart
+    chMtxLock(&usartmtx);
+
+    if (esp8266Disconnect(channel))
+    {
+        resetChannel(ch);
+        retval = 0;
     }
     
     chMtxUnlock();
-
-    return (retval) ? 0 : -1;
+    
+    return retval;
 }
 
 #if 0

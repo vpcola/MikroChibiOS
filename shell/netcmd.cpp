@@ -4,6 +4,7 @@
 #include "chprintf.h"
 #include "shellutils.h"
 #include "gfx.h" // GFILE
+#include "ntp.h"
 
 #include <string.h>
 #include <stdlib.h>
@@ -179,3 +180,21 @@ void cmd_ipstat(BaseSequentialStream *chp, int argc, char *argv[])
       chprintf(chp, "Channel %d is disconnected\r\n", i);
   }
 }
+
+void cmd_ntpdate(BaseSequentialStream * chp, int argc, char * argv[])
+{
+    (void)argv;
+    timeval_x tv;
+    
+    // 0.sg.pool.ntp.org - 128.199.253.156
+    // 1.sg.pool.ntp.org - 203.174.83.202
+
+    if (sntp_get("128.199.253.156", 123, &tv) < 0)
+        return;
+
+    chprintf(chp, "NTP returned %ld seconds\r\n", tv.tv_sec);
+    chprintf(chp, "             %ld microseconds\r\n", tv.tv_usec);
+
+}
+
+

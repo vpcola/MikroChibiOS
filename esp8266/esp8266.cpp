@@ -524,7 +524,7 @@ const char * esp8266GetIPAddress(void)
 int esp8266GetIpStatus(onIPStatus iphandler, onConStatus stathandler)
 {
   int numlines = 0, numread = 0;
-  int status = WIFI_CONN_UNKNWN, chanid;
+  int status = WIFI_CONN_UNKNWN, chanid = -1;
   IPStatus ipstatus;
   char * p, tmp[100];
 
@@ -602,6 +602,20 @@ int esp8266GetIpStatus(onIPStatus iphandler, onConStatus stathandler)
   return status;
 }
 
+int esp8266Server(int channel, int type, uint16_t port)
+{
+    int mode = 0;
+    // TODO: Esp8266 firmware can not yet start a UDP
+    // server, so type here is always TCP
+    if (type == UDP) return -1;
+
+    chsnprintf(txbuff, TXBUFF_SIZ, "AT+CIPSERVER=%d,%d\r\n",
+        mode, port);
+
+    return esp8266CmdX(txbuff, RET_OK|RET_ERROR, 100, TIME_INFINITE);
+        
+}
+
 int esp8266Connect(int channel, const char * ip, uint16_t port, int type)
 {
     // Simply send the data over the channel.
@@ -619,7 +633,7 @@ int esp8266Connect(int channel, const char * ip, uint16_t port, int type)
 bool esp8266Disconnect(int channel)
 {
   chsnprintf(txbuff, TXBUFF_SIZ, "AT+CIPCLOSE=%d\r\n", channel);
-  return esp8266Cmd(txbuff, "OK\r\n", 100);
+  return (esp8266CmdX(txbuff, RET_OK|RET_ERROR, 100, TIME_INFINITE) == RET_OK);
 }
 
 bool esp8266SendLine(int channel, const char * str)

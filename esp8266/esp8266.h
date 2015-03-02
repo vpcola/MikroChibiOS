@@ -150,6 +150,7 @@ const char * esp8266GetIPAddress(void);
 bool esp8266SetMode(int mode);
 
 // Client API
+int esp8266Server(int channel, int type, uint16_t port);
 int esp8266Connect(int channel, const char * ip, uint16_t port, int type);
 bool esp8266SendLine(int channel, const char * str);
 
