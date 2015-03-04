@@ -76,36 +76,47 @@ int sntp_get(const char * hostname, int port, timeval_x *tv)
 
 int sntp_get(const char * hostname, int port, timeval_x *tv)
 {
-  int chanid;
+  int chanid, numread;
   ntp_packet pkt;
 
   chanid = channelOpen(UDP);
-  if(chanid > 0)
+  if(chanid < 0)
+    return -1;
+  chprintf((BaseSequentialStream *)&SD1, "Channel %d opened\r\n", chanid);
+
+  if (channelConnect(chanid, hostname, port) < 0)
+    return -1;
+
+  chprintf((BaseSequentialStream *)&SD1, "SNTP connected ...\r\n");
+
+  memset(&pkt, 0, sizeof pkt);
+  pkt.mode_vn_li = (4 << 3) | 3;
+  pkt.originate_timestamp_secs = htonl(secondsinceepoch() + NTPEPOCH);
+  if (channelSend(chanid, (const char *) &pkt, sizeof(pkt)) == sizeof(pkt))
   {
-      if (channelConnect(chanid, hostname, port) < 0)
-        return -1;
-      chprintf((BaseSequentialStream *)&SD1, "SNTP connected ...\r\n");
-
-      memset(&pkt, 0, sizeof pkt);
-      pkt.mode_vn_li = (4 << 3) | 3;
-      pkt.originate_timestamp_secs = htonl(secondsinceepoch() + NTPEPOCH);
-      if (channelSend(chanid, (const char *) &pkt, sizeof(pkt)) == sizeof(pkt))
-      {
-         chprintf((BaseSequentialStream *)&SD1, "SNTP data sent ...\r\n");
-         // Read back the data
-         if (channelRead(chanid, (char *) &pkt, sizeof(pkt)) == sizeof(pkt))
-         {
-            chprintf((BaseSequentialStream *)&SD1, "SNTP data received ...\r\n");
-            // Set the time
-            tv->tv_sec = ntohl(pkt.transmit_timestamp_secs) - NTPEPOCH;
-            tv->tv_usec = ntohl(pkt.transmit_timestamp_fraq) / 4295;
-
-            channelClose(chanid);
-            return 0;
-         }
-      }
+    chprintf((BaseSequentialStream *)&SD1, "SNTP data sent ...\r\n");
+    // Read back the data
+    if ((numread = channelRead(chanid, (char *) &pkt, sizeof(pkt))) < 0)
+    {
       channelClose(chanid);
+      return -1;
+    }
+
+    if (numread != sizeof(pkt))
+    {
+      channelClose(chanid);
+      return -1;
+    }
+
+    chprintf((BaseSequentialStream *)&SD1, "SNTP data received ...\r\n");
+    // Set the time
+    tv->tv_sec = ntohl(pkt.transmit_timestamp_secs) - NTPEPOCH;
+    tv->tv_usec = ntohl(pkt.transmit_timestamp_fraq) / 4295;
+
+    channelClose(chanid);
+    return 0;
   }
 
+  channelClose(chanid);
   return -1;
 }

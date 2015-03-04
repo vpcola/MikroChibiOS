@@ -12,7 +12,7 @@
 extern "C" {
 #endif
 
-#define DEBUG 1
+//#define DEBUG 1
 
 #ifdef DEBUG
 #define DBG(X, ...)    if(dbgstrm) chprintf(dbgstrm, X, ##__VA_ARGS__ )
@@ -92,6 +92,7 @@ typedef struct {
 #define  RET_CLOSED     0x0200
 #define  RET_IPD        0x0400
 #define  RET_NOCHANGE   0x0800
+#define  RET_SENTFAIL   0x1000
 
 typedef struct {
   int retval;

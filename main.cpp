@@ -48,7 +48,7 @@ static const SerialConfig serialcfg = {
 };
 
 static const SerialConfig esp8266cfg = {
-    9600, // baud rate
+    115200, //9600, // baud rate
     0,
     0,
     0,

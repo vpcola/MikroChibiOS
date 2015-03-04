@@ -35,6 +35,7 @@ static const EspReturn returnValues[] = {
    { RET_ALREADY_CONNECTED, "LINK IS BUILDED\r\n" },
    { RET_NOCHANGE,          "no change\r\n" },
    { RET_SENT,              "SEND OK\r\n" },
+   { RET_SENTFAIL,          "SEND FAIL\r\n" },
    { RET_ERROR,             "ERROR\r\n" },
    { RET_UNLINK,            "Unlink\r\n" },
    { RET_LINKED,            "Linked\r\n" },
@@ -487,7 +488,7 @@ const char * esp8266GetFirmwareVersion(void)
 const char * esp8266GetIPAddress(void)
 {
   int numread, numline = 0;
-  //char temp[100], * loc;
+  char temp[100], * loc;
 
   chprintf(usart, "AT+CIFSR\r\n");
   DBG(">>AT+CIFSR\r\n");
@@ -503,13 +504,14 @@ const char * esp8266GetIPAddress(void)
     strip(rxbuff, '\r');
     DBG("CIFSR [%s]\r\n", rxbuff);
 
-    //if ((loc = strstr(rxbuff, "+CIFSR:STAIP,\"")) != NULL)
-    if (numline == 2)
+    if ((loc = strstr(rxbuff, "+CIFSR:STAIP,\"")) != NULL)
+    //if (numline == 2)
     {
       // store the station ip
-      //strcpy(temp, loc + 14);
-      //strip(temp, '\r');
-      strcpy(assignedIP, rxbuff);
+      strcpy(temp, loc + 14);
+      strip(temp, '\r');
+      strcpy(assignedIP, temp);
+      //strcpy(assignedIP, rxbuff);
     }
 
     numline++;
@@ -627,7 +629,7 @@ int esp8266Connect(int channel, const char * ip, uint16_t port, int type)
 
     // For my particular firmware AT+CIPSTART returns "LINKED" and
     // "UNLINK"
-    return esp8266CmdX(txbuff, RET_LINKED | RET_UNLINK | RET_ERROR , 100, TIME_INFINITE);
+    return esp8266CmdX(txbuff, RET_OK | RET_LINKED | RET_UNLINK | RET_ERROR , 100, TIME_INFINITE);
 }
 
 bool esp8266Disconnect(int channel)
@@ -679,7 +681,7 @@ bool esp8266SendHeader(int channel, int datatosend)
 
 int esp8266Send(const char * data, int len)
 {
-    int numsent = 0, bufsiz;
+    int numsent = 0, numtries, bufsiz;
 
     do {
       //retval = sdPutTimeout((SerialDriver *) usart, data[numsent], WRITE_TIMEOUT);
@@ -699,9 +701,15 @@ int esp8266Send(const char * data, int len)
     }
 #endif
 
-   // while(esp8266ReadUntil("SEND OK\r\n", READ_TIMEOUT) < 1);
+   //esp8266ReadUntil("SEND OK\r\n", READ_TIMEOUT);
    bufsiz = RXBUFF_SIZ;
-   esp8266ReadSwitch(RET_SENT, rxbuff, &bufsiz, TIME_INFINITE);
+   while(esp8266ReadSwitch(RET_SENT | RET_SENTFAIL, rxbuff, &bufsiz, TIME_INFINITE) < 1)
+   {
+     if (numtries < 10)
+       numtries++;
+     else
+       break;
+   }
 
    return numsent;
 }
@@ -723,7 +731,7 @@ int esp8266ReadRespHeader(int * channel, int * param, int timeout)
   DBG(">>Retval = %d\r\n", retval);
   if(retval == RET_IPD)
   {
-      DBG(">>Read the +IPD, reading message length and channel ..\r\n");
+      if (dbgstrm) chprintf(dbgstrm, ">>Read the +IPD, reading message length and channel ..\r\n");
       // Read header information (up until the ":")
       memset(rxbuff, 0, RXBUFF_SIZ);
       if ((numread = esp8266ReadBuffUntil(rxbuff, RXBUFF_SIZ, ":", READ_TIMEOUT)) > 0)
@@ -734,7 +742,7 @@ int esp8266ReadRespHeader(int * channel, int * param, int timeout)
           if (p) *channel = atoi(p);
           p = strtok(NULL, ",");
           if (p) *param = atoi(p);
-          DBG(">>Read channel = %d, bytestoread = %d\r\n", *channel, *param);
+          if (dbgstrm) chprintf(dbgstrm, ">> Channel = %d, bytestoread = %d\r\n", *channel, *param);
       }
   }
 
@@ -766,13 +774,13 @@ int esp8266Read(char * buffer, int bytestoread)
       break;
   }while(numread < bytestoread);
 
-#ifdef DEBUG
+//#ifdef DEBUG
   if (numread > 0)
   {
-    DBG("\r\n>>Read %d bytes ... dumping data\r\n", numread);
+    if(dbgstrm) chprintf(dbgstrm, "\r\n>>Read %d bytes ... dumping data\r\n", numread);
     hexdump(dbgstrm, buffer, numread);
   }
-#endif
+//#endif
 
   return numread;
 }
