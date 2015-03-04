@@ -5,66 +5,16 @@
 #include "shellutils.h"
 #include "gfx.h" // GFILE
 #include "ntp.h"
+#include "parseurl.h"
+#include "httputils.h"
 
 #include <string.h>
 #include <stdlib.h>
 
-#define WEATHERBUF_SIZ 8196
-static char weatherbuff[WEATHERBUF_SIZ];// __attribute__((section("*.ccm"))) = { 0 };
 static const char * getreq = "GET /data/2.5/weather?q=Singapore,sg HTTP/1.0\r\n" \
     "Host: api.openweathermap.org\r\n" \
     "\r\n\r\n"; // third line is an empty line
 static const char * url = "api.openweathermap.org";
-
-/**
- * This function calls raw esp8266 functions.
- */
-#if 0
-void cmd_wget(BaseSequentialStream *chp, int argc, char *argv[])
-{
-    (void)argv;
-    int id = 1;
-    int status, bytestoread = 0;
-
-
-    // First make sure we're connected to AP
-    if (esp8266GetIPAddress() != NULL)
-    {
-      // Connect to the website url and port
-      if (esp8266Connect(id, "api.openweathermap.org", 80, TCP))
-      //if (esp8266Connect(id, "192.168.0.111", 80, TCP))
-      //if (esp8266Connect(id, "192.168.0.107", 80, TCP))
-      {
-        chprintf(chp, ">>Connected!\r\n");
-
-        if (esp8266SendHeader(id, strlen(getreq)))
-          esp8266Send(getreq, strlen(getreq));
-
-        //chThdSleepMilliseconds(2000);
-
-        // Read until we get the response header
-        while (((bytestoread = esp8266ReadRespHeader(&id,&status,5000)) > 0) && (id == 1))
-        {
-          // Read the rest of data
-          if ((bytestoread < 8196) && (status == 2))
-          {
-            memset(weatherbuff, 0, bytestoread);
-            esp8266Read(weatherbuff, bytestoread);
-            // TODO: Call a callback function here to store
-            //  the result of the read
-          }
-          // Read the remaining lines until
-          // we find OK (read finished) or Unlink (where server closes connection)
-          if(!esp8266ReadUntil("OK\r\n", 500)) break;
-        }
-
-        if (bytestoread > 0)
-          esp8266Disconnect(id);
-      }
-    }
-
-}
-#endif
 
 
 static int readheaderline(int channelid, char * buff, int bufsiz)
@@ -115,12 +65,113 @@ static int readhttpsize(int channelid)
   return datatoread;
 }
 
+void cmd_wget(BaseSequentialStream *chp, int argc, char *argv[])
+{
+    (void)argv;
+    int chanid = 1;
+    int numread, bytestoread = 0;
+    GFILE * fp = NULL;
+    char * buffer, *outfile;
+    urlinfo info;
+    HttpReqHeader reqheader;
+    HttpRespHeader resheader;
+
+    if (argc != 2) {
+        chprintf(chp, "Usage: wget <url> <file>\r\n");
+        return;
+    }
+
+    outfile = argv[1];
+
+    fp = gfileOpen(outfile, "w");
+    if (fp)
+    {
+        chanid = channelOpen(TCP);
+        if (chanid >= 0)
+        {
+            chprintf(chp, "Channel [%d] opened!\r\n", chanid);
+            // Get the url info to get host and port
+            if (parse_url(&info, argv[0]) < 0)
+            {
+                gfileClose(fp);
+                return;
+            }
+
+            chprintf(chp, "Connecting to host [%s:%d]...",
+                info.hostname,
+                info.port);
+
+            if (channelConnect(chanid, info.hostname, info.port) >= 0)
+            {
+                chprintf(chp, "connected!\r\n");
+                // Now send header information
+                reqheader.reqtype = GET;
+                reqheader.httpversion = HTTP_1_0;
+                strncpy(reqheader.path, info.path, MAX_PATH_LEN);
+                strcpy(reqheader.host, "www.lightsurge.com");
+                if (sendrequestheader(&reqheader, chanid) < 0)
+                {
+                    chprintf(chp, "Failed to send request header ...\r\n");
+                    channelClose(chanid);
+                    gfileClose(fp);
+                    return;
+                }
+                // Get the response header ...
+                if (recvresponseheader(&resheader, chanid) < 0)
+                {
+                    chprintf(chp, "Failed to receive response header ...\r\n");
+                    channelClose(chanid);
+                    gfileClose(fp);
+                    return;
+                }
+                if (resheader.status == 200) // OK 
+                {
+                    // Read the rest of the data
+                    bytestoread = resheader.contentlength;
+                    chprintf(chp, "Received response of type [%d] subtype[%s] size[%d]\r\n",
+                        resheader.contenttype,
+                        resheader.contentsubtype,
+                        bytestoread);
+
+                    // Allocate memory for data receive
+                    chprintf(chp, "Reading channel of (%d) bytes ..\r\n", bytestoread);
+                    buffer = (char *) malloc(bytestoread + (4 - (bytestoread %4)));
+                    if (buffer)
+                    {
+                        do {
+                            numread = channelRead(chanid, buffer, bytestoread);
+                            if (numread <= 0) break;
+                            chprintf(chp, "Writing %d bytes data to %s\r\n", numread, outfile);
+                            gfileWrite(fp, buffer, numread);
+
+                            bytestoread -= numread;
+
+                        }while(bytestoread > 0);
+
+                        free(buffer);
+                    }
+                }else
+                {
+                    // Report error here and return
+                    chprintf(chp, "HTTP header returned %d\r\n", resheader.status);
+                }
+
+            }else
+                chprintf(chp, "failed!\r\n");
+
+            channelClose(chanid);
+        }
+        gfileClose(fp);
+    }
+}
+
 void cmd_weather(BaseSequentialStream *chp, int argc, char *argv[])
 {
     (void)argv;
     int chanid = 1;
     int numsend, numread, bytestoread = 0;
     GFILE * fp = NULL;
+    char * buffer;
 
     if (argc != 1) {
       chprintf(chp, "Usage: weather <file>\r\n");
@@ -131,6 +182,7 @@ void cmd_weather(BaseSequentialStream *chp, int argc, char *argv[])
     if (fp)
     {
       chanid = channelOpen(TCP);
+      chprintf(chp, "Channel open returned %d\r\n", chanid);
       if (chanid >= 0)
       {
         chprintf(chp, "Channel [%d] opened!\r\n", chanid);
@@ -144,11 +196,20 @@ void cmd_weather(BaseSequentialStream *chp, int argc, char *argv[])
                 // Read the reply here ...
                 bytestoread = readhttpsize(chanid);
                 chprintf(chp, "Reading channel reply of (%d) bytes ..\r\n", bytestoread);
-                numread = channelRead(chanid, weatherbuff, bytestoread);
-                if (numread > 0)
+                buffer = (char *) malloc(bytestoread + (4 - (bytestoread %4)));
+                if (buffer)
                 {
-                  chprintf(chp, "Writing %d bytes data to %s\r\n", numread, argv[0]);
-                  gfileWrite(fp, weatherbuff, numread);
+                    do {
+                        numread = channelRead(chanid, buffer, bytestoread);
+                        if (numread <= 0) break;
+                        chprintf(chp, "Writing %d bytes data to %s\r\n", numread, argv[0]);
+                        gfileWrite(fp, buffer, numread);
+
+                        bytestoread -= numread;
+
+                    }while(bytestoread > 0);
+
+                    free(buffer);
                 }
             }
             channelClose(chanid);

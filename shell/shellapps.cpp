@@ -256,6 +256,7 @@ static const ShellCommand commands[] = {
   {"weather", cmd_weather},
   {"ipstat", cmd_ipstat},
   {"ntpdate", cmd_ntpdate},
+  {"wget", cmd_wget},
   {NULL, NULL}
 };
 

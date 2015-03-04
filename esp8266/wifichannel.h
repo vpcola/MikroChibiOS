@@ -77,6 +77,7 @@ bool channelSendLine(int channel, const char * msg);
 int channelSend(int channel, const char * msg, int msglen);
 int channelSendTo(int channel, const char * msg, int msglen, const char * ipaddress, uint16_t port);
 int channelRead(int channel, char * buff, int msglen);
+int channelReadLine(int channel, char * buff, int buflen);
 int channelGet(int channel);
 
 // Connect the channel to tcp or udp connection

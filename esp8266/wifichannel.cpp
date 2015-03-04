@@ -266,7 +266,13 @@ int wifiConnectAP(const char * ssid, const char * password)
 int channelOpen(int conntype)
 {
     for (int i = 0; i < MAX_CONNECTIONS; i++)
-        if ( _esp_channels[i].status == CHANNEL_UNUSED)
+    {
+        chprintf((BaseSequentialStream *)dbgstrm, "<< Channel %d is %d\r\n",
+                 _esp_channels[i].id,
+                  _esp_channels[i].status );
+
+        if ((_esp_channels[i].status == CHANNEL_UNUSED) ||
+            (_esp_channels[i].status == CHANNEL_DISCONNECTED))
         {
             _esp_channels[i].status = CHANNEL_DISCONNECTED;
             _esp_channels[i].type = conntype;
@@ -275,6 +281,7 @@ int channelOpen(int conntype)
 
             return i;
         }
+    }
     return -1;
 }
 
@@ -494,6 +501,36 @@ int channelRead(int chanid, char * buff, int msglen)
     }while((data >= 0) && (numread < msglen));
 
     // chprintf((BaseSequentialStream *) dbgstrm, ">>Read %d data from queue\r\n", numread);
+    return numread;
+}
+
+int channelReadLine(int chanid, char * buff, int buflen)
+{
+    int data, numread = 0;
+    esp_channel * channel = getChannel(chanid);
+    if (channel)
+    {
+        // Read from the input queue when there's data
+        do{
+            data = chIQGet(channel->iqueue);
+            if (data <= 0) break;
+            buff[numread] = (char) data;
+            numread++;
+
+            // If newline is reached, 
+            // return with numread.
+            if ((numread >= 2) &&
+                    (buff[numread-2] == '\r') &&
+                    (buff[numread-1] == '\n'))
+            {
+                numread -= 2;
+                buff[numread] = 0;
+                break;
+            }
+        }while(numread < buflen);
+    } else 
+        return -1;
+
     return numread;
 }
 
