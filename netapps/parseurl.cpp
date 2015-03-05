@@ -67,7 +67,8 @@ int parse_url(urlinfo * info, const char* url)
 		// p+1 contains the path part
 		//printf("path [%s]\n", z+1);
 		strncpy(info->path, z+1, MAX_PATH_LEN); 
-	}
+	}else
+	  strcpy(info->path, "");
 
 	// further split the tokens into
 	// <user>:<password>

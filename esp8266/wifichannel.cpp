@@ -15,11 +15,11 @@
 // A fixed static array of input queues
 // Here we define the static buffers for
 // our input queues
-static uint8_t queue_buff0[QUEUEBUF_SIZ];
-static uint8_t queue_buff1[QUEUEBUF_SIZ];
-static uint8_t queue_buff2[QUEUEBUF_SIZ];
-static uint8_t queue_buff3[QUEUEBUF_SIZ];
-static uint8_t queue_buff4[QUEUEBUF_SIZ];
+static uint8_t queue_buff0[QUEUEBUF_SIZ]  __attribute__ ((section(".bufram")));
+static uint8_t queue_buff1[QUEUEBUF_SIZ]  __attribute__ ((section(".bufram")));
+static uint8_t queue_buff2[QUEUEBUF_SIZ]  __attribute__ ((section(".bufram")));
+static uint8_t queue_buff3[QUEUEBUF_SIZ]  __attribute__ ((section(".bufram")));
+static uint8_t queue_buff4[QUEUEBUF_SIZ]  __attribute__ ((section(".bufram")));
 
 // The output queue used to send command
 // and data to the esp8266

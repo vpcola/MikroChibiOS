@@ -17,8 +17,8 @@ static BaseSequentialStream * dbgstrm = NULL;
 #define READ_TIMEOUT 1000 // uart read timeout on 1000 ticks
 #define WRITE_TIMEOUT 1000 // uart write timeout on 1000 ticks
 // General purpose buffer for reading results
-static char rxbuff[RXBUFF_SIZ] = {0};
-static char txbuff[TXBUFF_SIZ] = {0};
+static char rxbuff[RXBUFF_SIZ]  __attribute__ ((section(".bufram")));
+static char txbuff[TXBUFF_SIZ]  __attribute__ ((section(".bufram")));
 
 #define FW_VERSION_STR_SIZ 100
 static char firmwareVersionStr[FW_VERSION_STR_SIZ];
@@ -509,7 +509,7 @@ const char * esp8266GetIPAddress(void)
     {
       // store the station ip
       strcpy(temp, loc + 14);
-      strip(temp, '\r');
+      strip(temp, '\"');
       strcpy(assignedIP, temp);
       //strcpy(assignedIP, rxbuff);
     }
@@ -731,7 +731,7 @@ int esp8266ReadRespHeader(int * channel, int * param, int timeout)
   DBG(">>Retval = %d\r\n", retval);
   if(retval == RET_IPD)
   {
-      if (dbgstrm) chprintf(dbgstrm, ">>Read the +IPD, reading message length and channel ..\r\n");
+      DBG(">>Read the +IPD, reading message length and channel ..\r\n");
       // Read header information (up until the ":")
       memset(rxbuff, 0, RXBUFF_SIZ);
       if ((numread = esp8266ReadBuffUntil(rxbuff, RXBUFF_SIZ, ":", READ_TIMEOUT)) > 0)
@@ -742,7 +742,7 @@ int esp8266ReadRespHeader(int * channel, int * param, int timeout)
           if (p) *channel = atoi(p);
           p = strtok(NULL, ",");
           if (p) *param = atoi(p);
-          if (dbgstrm) chprintf(dbgstrm, ">> Channel = %d, bytestoread = %d\r\n", *channel, *param);
+          DBG(">> Channel = %d, bytestoread = %d\r\n", *channel, *param);
       }
   }
 
@@ -777,7 +777,7 @@ int esp8266Read(char * buffer, int bytestoread)
 //#ifdef DEBUG
   if (numread > 0)
   {
-    if(dbgstrm) chprintf(dbgstrm, "\r\n>>Read %d bytes ... dumping data\r\n", numread);
+    DBG("\r\n>>Read %d bytes ... dumping data\r\n", numread);
     hexdump(dbgstrm, buffer, numread);
   }
 //#endif

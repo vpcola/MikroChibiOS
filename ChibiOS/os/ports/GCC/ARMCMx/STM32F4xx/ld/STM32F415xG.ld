@@ -100,6 +100,21 @@ SECTIONS
     . = ALIGN(4);
     _etext = .;
     _textdata = _etext;
+    
+    .ccm (NOLOAD):
+    {
+        PROVIDE(_cmm_start = .);
+        . = ALIGN(4);
+        *(.ccm)
+        . = ALIGN(4);
+        *(.ccm.*)
+        . = ALIGN(4);
+        *(.bufram)
+        . = ALIGN(4);
+        *(.bufram.*)
+        . = ALIGN(4);
+        PROVIDE(_cmm_end = .);
+    } > ccmram
 
     .stacks :
     {
