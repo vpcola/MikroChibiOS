@@ -5,7 +5,7 @@
 #include <string.h>
 #include "hal.h"
 #include "chprintf.h"
-#include "ntp.h"
+#include "ntputils.h"
 #include "wifichannel.h"
 #include "wifisocket.h"
 #include "timeutils.h"

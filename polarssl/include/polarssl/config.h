@@ -49,7 +49,7 @@
 #define POLARSSL_PEM_PARSE_C
 
 /* For testing with compat.sh */
-// #define POLARSSL_FS_IO
+#define POLARSSL_FS_IO
 
 #include "polarssl/check_config.h"
 

@@ -75,7 +75,8 @@
 #if !defined(_WIN32) || defined(EFIX64) || defined(EFI32)
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <dirent.h>
+//#include <dirent.h>
+#include <direntx.h>
 #endif
 #endif
 
@@ -1019,7 +1020,8 @@ int x509_crt_parse_path( x509_crt *chain, const char *path )
 #else /* _WIN32 */
     int t_ret;
     struct stat sb;
-    struct dirent *entry;
+    // struct dirent *entry;
+    dirent *entry;
     char entry_name[255];
     DIR *dir = opendir( path );
 

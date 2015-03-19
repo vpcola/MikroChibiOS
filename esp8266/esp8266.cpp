@@ -251,7 +251,7 @@ int esp8266ReadLinesUntil(char * resp, responselinehandler handler)
     if (strstr(linebuff, resp) != NULL)
       return numlines;
 
-    strip(linebuff, '\r');
+    rtrim(linebuff, '\r');
     if (handler) handler(linebuff, strlen(linebuff));
     numlines++;
   }
@@ -393,8 +393,8 @@ int esp8266ListAP(onNewAP apCallback)
     if (strstr(rxbuff, "OK\r\n") != NULL)
       return numlines;
 
-    strip(rxbuff, '\r');
-    strip(rxbuff, ')' );
+    rtrim(rxbuff, '\r');
+    rtrim(rxbuff, ')' );
     if (strstr(rxbuff, "+CWLAP:(") != NULL)
     {
         strcpy(line, (char *) rxbuff + 8);
@@ -475,7 +475,7 @@ static void ongetfirmwareversion(const char * buffer, int len)
   strncpy(tmpbuf, buffer, len);
   // Compare only the first 2 numbers, usually "00"
   if(strncmp((const char *) tmpbuf, "00", 2) == 0)
-    strcpy(firmwareVersionStr, strip(tmpbuf, '\r'));
+    strcpy(firmwareVersionStr, rtrim(tmpbuf, '\r'));
 }
 
 const char * esp8266GetFirmwareVersion(void)
@@ -501,7 +501,7 @@ const char * esp8266GetIPAddress(void)
     if (strstr(rxbuff, "OK\r\n") != NULL)
       break;
 
-    strip(rxbuff, '\r');
+    rtrim(rxbuff, '\r');
     DBG("CIFSR [%s]\r\n", rxbuff);
 
     if ((loc = strstr(rxbuff, "+CIFSR:STAIP,\"")) != NULL)
@@ -509,7 +509,7 @@ const char * esp8266GetIPAddress(void)
     {
       // store the station ip
       strcpy(temp, loc + 14);
-      strip(temp, '\"');
+      rtrim(temp, '\"');
       strcpy(assignedIP, temp);
       //strcpy(assignedIP, rxbuff);
     }
@@ -541,7 +541,7 @@ int esp8266GetIpStatus(onIPStatus iphandler, onConStatus stathandler)
     if (strstr(rxbuff, "OK\r\n") != NULL)
       break;
 
-    strip(rxbuff, '\r');
+    rtrim(rxbuff, '\r');
 
     // Since MUX=1, we generally ignore the line
     // STATUS: <x> since we are after for the status
@@ -573,7 +573,7 @@ int esp8266GetIpStatus(onIPStatus iphandler, onConStatus stathandler)
         if (p)
         {
           strcpy(tmp, p+1);
-          strip(tmp, '\"');
+          rtrim(tmp, '\"');
           strcpy(constatus.srcaddress, tmp);
         }
         p = strtok(NULL, ",");
@@ -679,7 +679,7 @@ bool esp8266SendHeader(int channel, int datatosend)
   return false;
 }
 
-int esp8266Send(const char * data, int len)
+int esp8266Send(const char * data, int len,  bool waitforok)
 {
     int numsent = 0, numtries, bufsiz;
 
@@ -701,15 +701,18 @@ int esp8266Send(const char * data, int len)
     }
 #endif
 
-   //esp8266ReadUntil("SEND OK\r\n", READ_TIMEOUT);
-   bufsiz = RXBUFF_SIZ;
-   while(esp8266ReadSwitch(RET_SENT | RET_SENTFAIL, rxbuff, &bufsiz, TIME_INFINITE) < 1)
-   {
-     if (numtries < 10)
-       numtries++;
-     else
-       break;
-   }
+    if (waitforok)
+    {
+        //esp8266ReadUntil("SEND OK\r\n", READ_TIMEOUT);
+        bufsiz = RXBUFF_SIZ;
+        while(esp8266ReadSwitch(RET_SENT | RET_SENTFAIL, rxbuff, &bufsiz, TIME_INFINITE) < 1)
+        {
+            if (numtries < 10)
+                numtries++;
+            else
+                break;
+        }
+    }
 
    return numsent;
 }
@@ -727,6 +730,7 @@ int esp8266ReadRespHeader(int * channel, int * param, int timeout)
                              RET_LINKED |
                              RET_CONNECT |
                              RET_CLOSED |
+                             RET_SENT |
                              RET_IPD, rxbuff, &bufsiz, timeout);
   DBG(">>Retval = %d\r\n", retval);
   if(retval == RET_IPD)

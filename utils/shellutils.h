@@ -14,7 +14,13 @@ extern "C" {
 
 
 void hexdump(BaseSequentialStream * bss, void *mem, unsigned int len);
-char * strip(char * str, char stripchar);
+
+char * rtrim(char * str, char trimchar);
+char * ltrim(char * str, char trimchar);
+
+char * rstrip(char * str);
+char * lskip(const char* s);
+
 int _getpid(void);
 void _exit(int i);
 int _kill(int pid, int sig);

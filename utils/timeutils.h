@@ -15,8 +15,6 @@
 
 time_t secondsinceepoch();
 
-void cmd_date(BaseSequentialStream * chp, int argc, char *argv[]);
-
 #ifdef __cplusplus
  }
 #endif

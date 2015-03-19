@@ -440,7 +440,12 @@ int channelSend(int channel, const char * msg, int msglen)
       //chprintf((BaseSequentialStream *) dbgstrm, ">>Sending Data ...\r\n");
       // Send the message with a blocking call...
       if ( esp8266SendHeader(channel, msglen))
-        numsend = esp8266Send(msg, msglen);
+      {
+        esp_channel * ch = getChannel(channel);
+        // For UDP, response is received sometimes right away
+        // before we even get the "SEND OK" line
+        numsend = esp8266Send(msg, msglen, (ch->type == TCP));
+      }
 
       // Unlock the usart ...
       chMtxUnlock();

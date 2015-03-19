@@ -1,7 +1,4 @@
-NETAPPSRC = $(NETAPPDIR)/updater.cpp \
-	$(NETAPPDIR)/ntp.cpp \
-	$(NETAPPDIR)/parseurl.cpp \
-	$(NETAPPDIR)/httputils.cpp
+NETAPPSRC = $(NETAPPDIR)/updater.cpp 
 
 
 NETAPPINC = $(NETAPPDIR)/

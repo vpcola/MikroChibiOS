@@ -77,6 +77,7 @@ I2CDEVICES = ./i2cdevices
 ESP8266 = ./esp8266
 JSMNDIR = ./jsmn
 NETAPPDIR = ./netapps
+UTILS = ./utils
 POLARSSL = ./polarssl
 
 include $(BOARDDIR)/MIKROE_MINI_M4/board.mk
@@ -97,6 +98,7 @@ include $(I2CDEVICES)/i2cdevices.mk
 include $(ESP8266)/esp8266.mk
 include $(JSMNDIR)/jsmn.mk
 include $(NETAPPDIR)/netapps.mk
+include $(UTILS)/utils.mk
 include $(POLARSSL)/polarssl.mk
 
 
@@ -132,6 +134,7 @@ CPPSRC = $(CHCPPSRC) \
  	$(I2CDEVICESSRC) \
 	$(ESP8266SRC) \
 	$(NETAPPSRC) \
+	$(UTILSSRC) \
          main.cpp
 
 # C sources to be compiled in ARM mode regardless of the global setting.
@@ -168,6 +171,7 @@ INCDIR = $(PORTINC) $(KERNINC) $(TESTINC) \
 	 $(ESP8266INC) \
 	 $(JSMNINC) \
 	 $(NETAPPINC) \
+	 $(UTILSINC) \
 	 $(POLARSSLINC) \
          $(CHIBIOS)/os/various
 

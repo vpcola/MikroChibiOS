@@ -3,6 +3,7 @@
 #include "chrtclib.h"
 #include <errno.h>
 #include <string.h>
+#include <ctype.h>
 
 #undef errno
 extern int errno;
@@ -44,14 +45,39 @@ void hexdump(BaseSequentialStream * bss, void *mem, unsigned int len)
 }
 
 // strip trailing stripchar from string
-char * strip(char * str, char stripchar)
+char * rtrim(char * str, char trimchar)
 {
   char *pos;
-  if ((pos=strchr(str, stripchar)) != NULL)
+  if ((pos=strrchr(str, trimchar)) != NULL)
       *pos = '\0';
 
   return str;
 }
+
+char * ltrim(char * str, char trimchar)
+{
+  char *pos;
+  if ((pos=strchr(str, trimchar)) != NULL)
+      *pos = '\0';
+
+  return str;
+}
+
+char* rstrip(char* s)
+{
+    char* pstr = s + strlen(s);
+    while (pstr > s && isspace((unsigned char)(*--pstr)))
+        *pstr = '\0';
+    return s;
+}
+
+char* lskip(const char* s)
+{
+    while (*s && isspace((unsigned char)(*s)))
+        s++;
+    return (char*)s;
+}
+
 
 
 /* libc stub */

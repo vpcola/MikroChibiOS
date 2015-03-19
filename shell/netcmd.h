@@ -3,7 +3,7 @@
 
 /**
  * Author : Cola Vergil
- * Email  : tkcov@svsqdcs01.telekurs.com
+ * Email  : vpcola@gmail.com
  * Date : Fri Feb 13 2015
  **/
 

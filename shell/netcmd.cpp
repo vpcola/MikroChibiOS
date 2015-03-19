@@ -4,7 +4,7 @@
 #include "chprintf.h"
 #include "shellutils.h"
 #include "gfx.h" // GFILE
-#include "ntp.h"
+#include "ntputils.h"
 #include "parseurl.h"
 #include "httputils.h"
 

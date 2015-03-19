@@ -5,7 +5,7 @@
 
 /**
  * Author : Cola Vergil
- * Email  : tkcov@svsqdcs01.telekurs.com
+ * Email  : vpcola@gmail.com
  * Date : Wed Feb 04 2015
  **/
 #ifdef __cplusplus
@@ -156,7 +156,7 @@ int esp8266Connect(int channel, const char * ip, uint16_t port, int type);
 bool esp8266SendLine(int channel, const char * str);
 
 bool esp8266SendHeader(int channel, int datatosend);
-int esp8266Send(const char * data, int len);
+int esp8266Send(const char * data, int len, bool waitforok);
 
 int esp8266ReadRespHeader(int * channel, int * param, int timeout);
 int esp8266Read(char * buffer, int buflen);

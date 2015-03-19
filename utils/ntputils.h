@@ -1,5 +1,5 @@
-#ifndef __NTP_H__
-#define __NTP_H__
+#ifndef __NTPUTILS_H__
+#define __NTPUTILS_H__
 
 /**
  * Author : Cola Vergil
