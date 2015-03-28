@@ -1,4 +1,5 @@
 ESP8266SRC = $(ESP8266)/esp8266.cpp \
+	$(ESP8266)/esp8266a.cpp \
 	$(ESP8266)/wifichannel.cpp \
 	$(ESP8266)/wifisocket.cpp
 
