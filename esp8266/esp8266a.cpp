@@ -159,12 +159,11 @@ void Esp8266::ongmrline(char * buffer, int bufsiz)
 void Esp8266::onaplist(char * buffer, int bufsiz)
 {
     char line[200], *p;
-    ssidinfo info;
-
     rtrim(buffer, '\r');
     rtrim(buffer, ')' );
     if (strstr(buffer, "+CWLAP:(") != NULL)
     {
+        ssidinfo info;
         strcpy(line, (char *) buffer + 8);
         p = strtok(line, ",");
         if (p) info.ecn = atoi(p); // ecn
@@ -176,7 +175,7 @@ void Esp8266::onaplist(char * buffer, int bufsiz)
         if (p) strncpy(info.macaddr, p, MACADDRMAX_LEN);
 
         // add info to the list
-        _ssids.push_back(info);
+        if (_aphandler) _aphandler(&info);
     }
 
 }
@@ -196,13 +195,12 @@ void Esp8266::oncifsr(char * buffer, int bufsiz)
 }
 
 
-Esp8266::Esp8266(SerialDriver * sdp, int mode, int timeout)
+Esp8266::Esp8266(SerialDriver * sdp, int mode, int timeout, ssidinfohandler onAPhandler)
     :  _sdp(sdp),
     _mode(mode),
-    _timeout(timeout)
+    _timeout(timeout),
+    _aphandler(onAPhandler)
 {
-    _ssids.clear();
-
 }
 
 int Esp8266::init()
@@ -260,6 +258,19 @@ int Esp8266::connectAP(const char * ssid, const char * passwd)
         return 0;
     }
     return -1;
+}
+
+void Esp8266::disconnectAP()
+{
+  int numread = RXBUFF_SIZ;
+  chprintf((BaseSequentialStream *) _sdp, "AT+CWQAP\r\n");
+
+  //read(RET_OK, (char *) rxbuff, &numread);
+  if (read(RET_OK, (char *) rxbuff, &numread) != RET_OK)
+  {
+      // post warnings here
+  }
+
 }
 
 int Esp8266::writechannel(int chanid, const char * data, int datalen)

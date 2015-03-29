@@ -1,5 +1,6 @@
 #include "netcmd.h"
 #include "esp8266.h"
+#include "esp8266a.h"
 #include "wifichannel.h"
 #include "chprintf.h"
 #include "shellutils.h"
@@ -16,6 +17,7 @@ static const char * getreq = "GET /data/2.5/weather?q=Singapore,sg HTTP/1.0\r\n"
     "\r\n\r\n"; // third line is an empty line
 static const char * url = "api.openweathermap.org";
 
+static Esp8266 netwifi(&SD3, 3);
 
 static int readheaderline(int channelid, char * buff, int bufsiz)
 {
@@ -266,4 +268,14 @@ void cmd_ntpdate(BaseSequentialStream * chp, int argc, char * argv[])
 
 }
 
+void cmd_nettest(BaseSequentialStream * chp, int argc, char * argv[])
+{
+  (void)argv;
 
+
+  netwifi.init();
+  // List the ap's here
+
+  netwifi.connectAP("MyRepublic-9D18", "026FD991CD");
+  netwifi.disconnectAP();
+}

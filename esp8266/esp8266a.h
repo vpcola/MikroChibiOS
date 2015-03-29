@@ -10,7 +10,6 @@
 #include "wifidefs.h"
 
 #include <string>
-#include <list>
 
 #define  RET_INVAL      -1
 #define  RET_NONE       0x0001
@@ -37,14 +36,16 @@ typedef struct _ssidinfo
 
 class Esp8266;
 typedef void (Esp8266::*linehandler)(char * data, int datalen);
+typedef void (*ssidinfohandler)(ssidinfo * info);
 
 class Esp8266
 {
     public :
-    Esp8266(SerialDriver * sdp, int mode, int timeout = TIMEOUT_DEFAULT );
+    Esp8266(SerialDriver * sdp, int mode, int timeout = TIMEOUT_DEFAULT, ssidinfohandler onAPHandler = NULL );
     
     int init();
     int connectAP(const char * SSID, const char * passwd);
+    void disconnectAP();
     
     int writechannel(int chanid, const char * data, int datalen);
 
@@ -54,8 +55,6 @@ class Esp8266
     const char * getipaddr() { return _ipaddr; }
     const char * getfwversion() { return _fwversion; }
     const char * getmacaddr() { return _macaddr; }
-
-    const std::list<ssidinfo> * getssidlist() { return &_ssids; }
 
     private :
 
@@ -67,11 +66,11 @@ class Esp8266
     SerialDriver * _sdp;
     int _mode;
     int _timeout;
+    ssidinfohandler _aphandler;
     char _ipaddr[IPADDRMAX_LEN];
     char _macaddr[MACADDRMAX_LEN];
     char _fwversion[FWVERMAX_LEN];
 
-    std::list<ssidinfo> _ssids;
 };
 
 #endif

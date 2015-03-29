@@ -228,15 +228,17 @@ int main(void) {
   /**
    * Initialize wifi
    **/
+#if 0
   chprintf((BaseSequentialStream *)&SD1, "Initializing ESP8266\r\n");
    if (wifiInit(WIFI_MODE_APSTA, &SD3,  &SD1) == WIFI_ERR_NONE)
      wifiConnectAP("MyRepublic-9D18", "026FD991CD");
+
 
    /**
     * Start the updater process
     */
    startHumidTempUpdater((BaseSequentialStream *) &SD1);
-
+#endif
 
 
   /*

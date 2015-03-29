@@ -311,6 +311,7 @@ static const ShellCommand commands[] = {
   {"ipstat", cmd_ipstat},
   {"ntpdate", cmd_ntpdate},
   {"wget", cmd_wget},
+  {"nettest", cmd_nettest },
   {NULL, NULL}
 };
 
